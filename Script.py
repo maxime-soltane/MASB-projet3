@@ -2,23 +2,6 @@ from pybloom_live import ScalableBloomFilter
 import gzip
 from Bio import SeqIO    
     
-def init_bloom_filter(sequence, k) -> ScalableBloomFilter:
-    """ 
-    Initializes a Bloom filter with all k-mers in the genome
-
-    Returns:
-    The Bloom filter containing the genome's kmers
-    """
-    #Initialize the bloom filter with an estimated capacity and the error rate of the filter returning false positives
-    bloom = ScalableBloomFilter(initial_capacity=len(sequence)//k * 2, error_rate=0.01)
-        
-    # Loop through the sequence to extract and add kmers in the bloom filter
-    for i in range(len(sequence) - k + 1):
-        bloom.add(sequence[i:i+k])
-
-    return bloom
-
-
 def read_gz(filename):
         """
         Open a Fasta or FastQ file, compressed (.gz) or not, in reading mode and return sequence's iterator.
@@ -41,3 +24,30 @@ def read_gz(filename):
                 yield from SeqIO.parse(file, 'fasta')
             else:  
                 raise ValueError(f"file format not supported: '{filename}'")
+            
+def bloom_filter(sequence, k) -> ScalableBloomFilter:
+    """ 
+    Initializes a Bloom filter with all k-mers in the genome
+
+    Returns:
+    The Bloom filter containing the genome's kmers
+    """
+    #Initialize the bloom filter with an estimated capacity and the error rate of the filter returning false positives
+    bloom = ScalableBloomFilter(initial_capacity=len(sequence)//k * 2, error_rate=0.01)
+        
+    # Loop through the sequence to extract and add kmers in the bloom filter
+    for i in range(len(sequence) - k + 1):
+        bloom.add(sequence[i:i+k])
+
+    return bloom
+
+
+if __name__ == '__main__':
+    k = 'CCC'
+    for s in read_gz("Level0.fa.gz"):
+        seq = str(s.seq)
+        bf = bloom_filter(seq, 3)
+        if k in bf:
+            print("oui")
+        else:
+            print("non")
