@@ -40,7 +40,7 @@ def bloom_filter(sequence, k) -> ScalableBloomFilter:
 
 
 if __name__ == '__main__':
-    k = 'CCC'
+    k = 'CCkC'
     for s in read_gz("Level0.fa.gz"):
         seq = str(s.seq)
         bf = bloom_filter(seq, 3)

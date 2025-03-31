@@ -1,0 +1,186 @@
+@page {
+  margin: 30px;
+}
+
+* {
+  transition: none !important;
+  box-shadow: none !important;
+  color-adjust: exact !important;
+  -webkit-print-color-adjust: exact !important;
+}
+
+body {
+  page-break-before: avoid;
+  background-color: var(--color-2);
+}
+
+body .toolbar,
+body [data-drupal-messages],
+body .block-local-tasks-block,
+body .site-layout__footer,
+body .block-system-breadcrumb-block,
+body .site-layout__col--left,
+body .o-slider__bullets,
+body .o-slider__controls,
+body .block-addtoany-block,
+body .content-section-layout__region--banner .paragraph--type--media-information.paragraph--view-mode--default .field--type-image::after,
+body .content-section-layout__region--banner .paragraph--type--media-information.paragraph--view-mode--default .field--name-field-media-info-path::after,
+body .content-section-layout__region--banner .paragraph--type--banner.paragraph--view-mode--default .field--type-image::after,
+body .content-section-layout__region--banner .paragraph--type--banner.paragraph--view-mode--default .field--name-field-media-info-path::after,
+body .banner__image-container--left-shadow::after,
+body .banner-small__image-shadow::after,
+body .banner__image-container--shadow::after,
+body .content-section-layout__region--second-region,
+body .block-views-blockrecipes-related-recipe,
+body .content-section-layout__region--blue-bg.content-section-layout__region--fourth-region,
+body .block-bazaarvoice-reviews {
+  display: none !important;
+}
+
+body .banner__middle-left-content,
+body .banner-small__content {
+  position: static;
+  padding: 20px 0 0;
+  transform: none;
+}
+
+body .contextual {
+  opacity: 0;
+}
+
+body .text-formatted a {
+  text-decoration: underline;
+}
+
+body .site-layout__col--right {
+  display: block;
+  min-height: 0;
+  margin-left: 0;
+  padding-top: 0 !important;
+}
+
+body .content-section-layout__region:not(.content-section-layout__region--banner),
+body .paragraph--type--wysiwyg.paragraph--view-mode--default {
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+body .clv-teaser a {
+  text-decoration: none;
+}
+
+body .clv-teaser img {
+  width: 100%;
+}
+
+body .m-accordion__body {
+  visibility: visible;
+  overflow: visible;
+  max-height: none;
+  transition: none;
+  opacity: 1;
+}
+
+body .banner-small__image-container img {
+  width: 100%;
+}
+
+body .h-container {
+  max-width: 100%;
+  padding-right: 0;
+  padding-left: 0;
+}
+
+body .node--type-article.node--view-mode-teaser {
+  padding: 0;
+}
+
+body .o-slider .o-slider__slides,
+body .o-slider--type-slider .o-slider__slides,
+body .o-slider--type-product-slider .o-slider__slides {
+  display: table !important;
+  width: 100% !important;
+  margin: -8px;
+  padding: 0;
+  transform: none !important;
+  white-space: normal !important;
+  font-size: 0;
+}
+
+body .o-slider .o-slider__slides .o-slider__slide,
+body .o-slider--type-slider .o-slider__slides .o-slider__slide,
+body .o-slider--type-product-slider .o-slider__slides .o-slider__slide {
+  display: inline-block !important;
+  width: 50% !important;
+  margin: 0 !important;
+  padding: 8px;
+  font-size: var(--font-size--base);
+}
+
+body .o-slider .o-slider__slides .o-slider__slide--clone,
+body .o-slider--type-slider .o-slider__slides .o-slider__slide--clone,
+body .o-slider--type-product-slider .o-slider__slides .o-slider__slide--clone {
+  display: none !important;
+}
+
+body .content-section-layout__region--banner .media--type-image.media--view-mode-banner .field--type-image,
+body .clv-paragraph-slider .paragraph--type--slide .field--type-image,
+body .banner__image-container {
+  height: auto;
+}
+
+body .clv-paragraph-recipe-highlight,
+body .clv-paragraph-article-highlight {
+  display: block;
+}
+
+body .clv-paragraph-recipe-highlight__middle {
+  padding-right: 0;
+}
+
+body .clv-paragraph-recipe-highlight__middle,
+body .clv-paragraph-recipe-highlight__right,
+body .clv-paragraph-article-highlight__left,
+body .clv-paragraph-article-highlight__right {
+  width: 100%;
+}
+
+body .clv-paragraph-article-highlight__left img {
+  width: 100%;
+}
+
+body .clv-paragraph-recipe-highlight--default {
+  padding-right: 0;
+}
+
+body .mfp-video-embed-popup > img {
+  width: 100%;
+}
+
+body .clv-magazine__grid > *:nth-child(1) div:not(.clv-magazine__image-wrapper),
+body .clv-magazine__grid > *:nth-child(2) div:not(.clv-magazine__image-wrapper),
+body .clv-magazine__grid > *:nth-child(3) div:not(.clv-magazine__image-wrapper) {
+  height: auto;
+}
+
+body .clv-magazine__grid > *:nth-child(1) div.layout__region,
+body .clv-magazine__grid > *:nth-child(2) div.layout__region,
+body .clv-magazine__grid > *:nth-child(3) div.layout__region {
+  display: block;
+}
+
+body .clv-magazine__link-wrapper {
+  height: auto !important;
+}
+
+body .block--node-recipe-tags {
+  padding: 0 30px;
+}
+
+body .button {
+  color: var(--color-2) !important;
+  border: 0 !important;
+  background-color: var(--color-brand) !important;
+  background-image: none !important;
+  background-size: auto !important;
+}

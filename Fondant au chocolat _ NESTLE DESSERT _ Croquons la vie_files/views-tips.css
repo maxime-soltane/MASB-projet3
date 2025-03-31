@@ -1,0 +1,18 @@
+.block-views-blocktips-tips-landing-recipe {
+  margin: var(--space-xxl) 0;
+}
+
+.block-views-blocktips-tips-landing-recipe > h2 > h2,
+.view-id-search.view-display-id-games_result .view__header > h2,
+.view-id-search.view-display-id-games_result_brand .view__header > h2 {
+  margin: var(--space-s) 0;
+}
+
+@media (min-width: 48rem) {
+
+  .block-views-blocktips-tips-landing-recipe > h2 > h2,
+  .view-id-search.view-display-id-games_result .view__header > h2,
+  .view-id-search.view-display-id-games_result_brand .view__header > h2 {
+    margin: var(--space-l) 0;
+  }
+}

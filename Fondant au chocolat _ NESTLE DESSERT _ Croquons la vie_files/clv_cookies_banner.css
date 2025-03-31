@@ -1,0 +1,4 @@
+/* Hide cookie banner tab */
+#_evh-button {
+  display: none !important;
+}

@@ -1,0 +1,23 @@
+.gigya-login {
+  margin-bottom: 15px;
+}
+.gigya-raas-login {
+  padding-right: 12px;
+  margin-right: 12px;
+  border-right: 1px solid;
+}
+.hidden {
+  display: none;
+}
+
+.gigya-msg-success {
+  color: green;
+  font-weight: bold;
+}
+
+.gigya-screen-dialog input[type="checkbox"] {
+  appearance: checkbox;
+}
+.gigya-screen-dialog input[type="radio"] {
+  appearance: radio;
+}

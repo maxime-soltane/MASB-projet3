@@ -1,0 +1,25 @@
+/* ---------- Color Module Styles ----------- */
+
+:root {
+  --color-1: #000000;
+  --color-2: #ffffff;
+  --color-3: #fcfcfd;
+  --color-4: #eeeeee;
+  --color-5: #dddddd;
+  --color-6: #aeaeae;
+  --color-7: #1f7dbe;
+  --color-8: #aec336;
+  --color-9: #fef11c;
+  --color-10: #d83084;
+  --color-11: #333333;
+  --color-12: #848484;
+  --color-13: #ff0000;
+  --color-14: #5c5c5c;
+  --color-15: #f3f0ea;
+  --color-16: #868686;
+  --color-brand: var(--color-7);
+  --color-brand-text: var(--color-2);
+  --color-secondary: var(--color-7);
+  --color-secondary-text: var(--color-2);
+  --color-background-logo: var(--color-7);
+}
