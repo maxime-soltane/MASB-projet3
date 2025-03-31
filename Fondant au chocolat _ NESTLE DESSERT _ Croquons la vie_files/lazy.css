@@ -1,8 +1,0 @@
-.js .lazyload,
-.js .lazyloading {
-  opacity: 0;
-}
-.js .lazyloaded {
-  transition: opacity var(--transition-base);
-  opacity: 1;
-}
