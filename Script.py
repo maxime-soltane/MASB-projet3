@@ -35,9 +35,18 @@ def kmers (sequence, k):
             kmers[kmer] += 1
     return kmers    
 
+def graphe_de_de_Bruijn(filename):
+    for read in read_gz(filename):
+        read_seq = str(read.seq)
+        list_kmers = kmers(read_seq, 3)
+    pass
+
+
 if __name__ == '__main__':
-    k = 'CCC'
-    for s in read_gz("Level0.fa.gz"):
-        seq = str(s.seq)
-        list_kmers = kmers(seq, 3)
-        print(list_kmers)
+    s = "AAAA"
+    t = "ACCC"
+    suff = s[-1]
+    if t.startswith(suff):
+        print ("yia")
+    else : 
+        print ("prout")
