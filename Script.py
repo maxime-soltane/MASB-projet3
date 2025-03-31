@@ -1,6 +1,6 @@
+from pybloom_live import ScalableBloomFilter   
 import gzip
 from Bio import SeqIO    
-from collections import defaultdict
     
 def read_gz(filename):
         """
@@ -16,43 +16,32 @@ def read_gz(filename):
         open_func = gzip.open if filename.endswith(".gz") else open  
 
         with open_func(filename, "rt") as file:
+            # Open FastQ file
+            if filename.endswith(('.fastq', '.fq', '.fastq.gz', '.fq.gz')):  
+                yield from SeqIO.parse(file, 'fastq')
             # Open FastA file    
-            if filename.endswith(('.fasta', '.fna', '.fa', '.fasta.gz', '.fna.gz', '.fa.gz')):
+            elif filename.endswith(('.fasta', '.fna', '.fa', '.fasta.gz', '.fna.gz', '.fa.gz')):
                 yield from SeqIO.parse(file, 'fasta')
             else:  
                 raise ValueError(f"file format not supported: '{filename}'")
             
-def kmers(sequence, k)-> dict[str:tuple[int:int]]:
-        '''
-        Collects all possible on the sequence passed in parameter associated with their occurrences.
+def bloom_filter(sequence, k) -> ScalableBloomFilter:
+    """ 
+    Initializes a Bloom filter with all k-mers in the genome
 
-        Parameters:
-        :param query: a nucleotide sequence corresponding to the query in which we are looking for every Kmers possible
-
-        Returns:
-        :return dict[str:tuple[int:int]]: A dictionary with Kmers sequences as keys and a list of occurrences positions
-        on the query as values.
-
-        Examples:
-        >>> a = Kmers(3)
-        >>> a.query_kmers('ATCGAAATCG')
-        {'ATC': [(0, 2), (6, 8)], 'TCG': [(1, 3), (7, 9)], 'CGA': [(2, 4)], 'GAA': [(3, 5)], 'AAA': [(4, 6)], 'AAT': [(5, 7)]}
+    Returns:
+    The Bloom filter containing the genome's kmers
+    """
+    #Initialize the bloom filter with an estimated capacity and the error rate of the filter returning false positives
+    bloom = ScalableBloomFilter(initial_capacity=len(sequence)//k * 2, error_rate=0.01)
         
-        # Cas extrême : séquence trop courte
-        >>> a.query_kmers('A')  
-        {}
-        '''
-        #Initializes a default dictionary with list as values
-        kmers = defaultdict(list)
+    # Loop through the sequence to extract and add kmers in the bloom filter
+    for i in range(len(sequence) - k + 1):
+        bloom.add(sequence[i:i+k])
 
-        #Loop through every position that can contain a kmer on the query sequence
-        for pos in range(len(sequence)-k+1):
-            #Extract the kmers and add it as a key to the dictionary and then add their occurrences positions as values 
-            kmers[sequence[pos:pos+k]].append((pos,pos+k-1))
+    return bloom
 
-        #Transform the default dictionary into a Python dictionary
-        return dict(kmers)
-    
+
 if __name__ == '__main__':
     k = 'CCC'
     for s in read_gz("Level0.fa.gz"):
@@ -61,4 +50,4 @@ if __name__ == '__main__':
         if k in bf:
             print("oui")
         else:
-            print("c mor")
+            print("non")
