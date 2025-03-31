@@ -50,4 +50,4 @@ if __name__ == '__main__':
         if k in bf:
             print("oui")
         else:
-            print("non")
+            print("c mor")
