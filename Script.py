@@ -16,11 +16,8 @@ def read_gz(filename):
         open_func = gzip.open if filename.endswith(".gz") else open  
 
         with open_func(filename, "rt") as file:
-            # Open FastQ file
-            if filename.endswith(('.fastq', '.fq', '.fastq.gz', '.fq.gz')):  
-                yield from SeqIO.parse(file, 'fastq')
             # Open FastA file    
-            elif filename.endswith(('.fasta', '.fna', '.fa', '.fasta.gz', '.fna.gz', '.fa.gz')):
+            if filename.endswith(('.fasta', '.fna', '.fa', '.fasta.gz', '.fna.gz', '.fa.gz')):
                 yield from SeqIO.parse(file, 'fasta')
             else:  
                 raise ValueError(f"file format not supported: '{filename}'")
