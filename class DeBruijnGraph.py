@@ -40,8 +40,8 @@ class Node:
     #vérifier si on a des N
     def __init__(self, sequence, ant: list =  None, post: list = None): #ant et post sont des objets Node
         self.__sequence = sequence
-        self.__ant = ant
-        self.__post = post
+        self.__ant = ant if ant is not None else []
+        self.__post = post if post is not None else []
 
     def get_seq(self):
         return self.__sequence
@@ -52,44 +52,84 @@ class Node:
     def get_post(self):
         return self.__post
 
-    def set_post(self, post):
-        self.__post = post
+    def add_post(self, post):
+        self.__post.append(post)
+    
+    def add_ant(self, ant):
+        self.__ant.append(ant)
 
+    def __str__(self):
+        
+        # Récupère les séquences des noeuds antécédents
+        ant_seqs = [node.get_seq() for node in self.get_ant()] if self.get_ant() else []
+    
+        # Récupère les séquences des noeuds successeurs
+        post_seqs = [node.get_seq() for node in self.get_post()] if self.get_post() else []
+    
+        return (f"Node(sequence='{self.get_seq()}', "
+                f"antecedents={ant_seqs}, "
+                f"successeurs={post_seqs})")
+    
 class DeBruijnGraph : 
     
     def __init__(self, kmers_dict):
-        self.__nodes_list = []  
+        self.__nodes = {} #self.__create_nodes()  
         self.__kmers_dict = kmers_dict
-        self.__first_node = self.first_node()
+        self.__first_node = self.__first_node()
+        self.__build_graph()
 
-    def first_node (self):
-        most_common_node = max(self.__kmers_dict, key = self.__kmers_dict.get)
-        occurences = self.__kmers_dict[most_common_node]
-        print (f"the most common node is {most_common_node} with {occurences} occurrences : it's the selected first node.")
-        node = Node(most_common_node)
-        self.__nodes_list.append(node)
+    def __first_node (self):
+        most_common_kmer = max(self.__kmers_dict, key = self.__kmers_dict.get)
+        occurences = self.__kmers_dict[most_common_kmer]
+        print (f"the most common node is {most_common_kmer} with {occurences} occurrences : it's the selected first node.")
+        node = Node(most_common_kmer)
+        self.__nodes[most_common_kmer] = node
         return node
     
-    def find_nodes (self, node: Node):
-        nodes_children = []
-        for nuc in "ATCG":
-            kmer = node.get_seq()[1:] + nuc
-            if kmer in self.__kmers_dict:
-                new_node = Node(kmer, ant = [node])
-                self.__nodes_list.append(new_node)
-                nodes_children.append(new_node)
-        node.set_post(nodes_children)
-        
-    def build_graph(self):
-        self.find_nodes(self.__first_node)
-        print("Nodes in graph:")
-        for node in self.__nodes_list:
-            print(node)
+    def __create_all_nodes(self):
+        for kmer in self.__kmers_dict:
+            if kmer not in self.__nodes:
+                self.__nodes[kmer] = Node(kmer)
 
+    def __nodes_connections (self):
+        for kmer, node in self.__nodes.items():
+            suff = kmer[1:]
+
+            for nuc in "ATCG":
+                next_kmer = suff + nuc
+                if next_kmer in self.__nodes:
+                    next_node = self.__nodes[next_kmer]
+                    node.add_post(next_node)
+                    next_node.add_ant(node)
+                    
+    def __build_graph(self):
+        self.__create_all_nodes()
+        self.__nodes_connections()
+
+    def simple_path(self, kmer):
+        if kmer not in self.__nodes:
+            return []
+        
+        path = []
+        current_node = self.__nodes[kmer]
+        
+        while True:
+            path.append(current_node.get_seq())
+            post = current_node.get_post()
+
+            current_node = post[0]
+
+            if current_node.get_seq() in path:
+                break
+        print(path)
+        return path
+    #Renvoie un path au "hasard" il faut modifier pour sélectionner le + long
 if __name__ == "__main__":
     f = read_gz("Level0.fa.gz")
-    kmer_dict = {}
+    kmers_dict = {}
     for seq in f:
-        kmer_dict.update(kmers(str(seq.seq), 11))
-    g = DeBruijnGraph(kmer_dict)
-    g.build_graph()
+        kmers_dict.update(kmers(str(seq.seq), 5))
+    g = DeBruijnGraph(kmers_dict)
+    g.simple_path("CCCAC")
+
+#CCCACGGACGCCAGAACGGGCGTTCTCCCTAGCGTGCGCCCTGCAGAACGTTCGCGAGAACGACAGAACTCACGGACGTTCTCCCTATCGACCGTGCGCAAGAACGTCCGGCCGTACGCCCTATAGAACGAGCGCCCGCTCGGCCGTGCTATAGAACTCTCGGCCTCACGGAAGAACGTTCGTGCGCCAGAACTATCTCACGCCCTAAAGTG
