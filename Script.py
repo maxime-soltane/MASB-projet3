@@ -1,4 +1,3 @@
-from pybloom_live import ScalableBloomFilter   
 import gzip
 from Bio import SeqIO    
     
@@ -27,7 +26,7 @@ def read_gz(filename):
             
 def kmers (sequence, k):
     kmers = {}
-    for pos in range(len(sequence)+k-1):
+    for pos in range(len(sequence)-k+1):
         kmer = sequence[pos:pos+k]
         if not kmer in kmers:
             kmers[kmer] = 1
@@ -47,6 +46,8 @@ if __name__ == '__main__':
     t = "ACCC"
     suff = s[-1]
     if t.startswith(suff):
-        print ("yia")
+        print ("oui")
     else : 
-        print ("prout")
+        print ("non")
+
+    print(kmers("AAAAATTCCCCTTCTGGG", 5))
