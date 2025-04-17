@@ -74,34 +74,34 @@ class DeBruijnGraph :
     
     def __init__(self, kmers_dict):
         self.__nodes = {} #self.__create_nodes()  
-        self.__kmers_dict = kmers_dict
-        self.__first_node = self.__first_node()
+        self.__kmers_dict = kmers_dict      
         self.__build_graph()
+        self.__first_node = self.__get_first_node()
 
-    def __first_node (self):
+    def __get_first_node (self):
         most_common_kmer = max(self.__kmers_dict, key = self.__kmers_dict.get)
         occurences = self.__kmers_dict[most_common_kmer]
         print (f"the most common node is {most_common_kmer} with {occurences} occurrences : it's the selected first node.")
-        node = Node(most_common_kmer)
-        self.__nodes[most_common_kmer] = node
-        return node
-    
+        return self.__nodes[most_common_kmer]
+
     def __create_all_nodes(self):
         for kmer in self.__kmers_dict:
             if kmer not in self.__nodes:
                 self.__nodes[kmer] = Node(kmer)
 
     def __nodes_connections (self):
-        for kmer, node in self.__nodes.items():
+        for kmer, count in self.__kmers_dict.items():
             suff = kmer[1:]
+            current_node = self.__nodes[kmer]
 
             for nuc in "ATCG":
                 next_kmer = suff + nuc
                 if next_kmer in self.__nodes:
                     next_node = self.__nodes[next_kmer]
-                    node.add_post(next_node)
-                    next_node.add_ant(node)
-                    
+                    for _ in range(count):
+                        current_node.add_post(next_node)
+                        next_node.add_ant(current_node)
+
     def __build_graph(self):
         self.__create_all_nodes()
         self.__nodes_connections()
@@ -110,26 +110,43 @@ class DeBruijnGraph :
         if kmer not in self.__nodes:
             return []
         
-        path = []
-        current_node = self.__nodes[kmer]
+        longest_path = []
+        #Stack the elements : current node, current path and visited node <- to avoid cycle
+        path_to_explore = [(self.__nodes[kmer], [kmer], {kmer})]
         
-        while True:
-            path.append(current_node.get_seq())
+        
+        while path_to_explore:
+            current_node, path, visited = path_to_explore.pop()
+
+            if len(path) > len(longest_path):
+                    longest_path = path
+                
             post = current_node.get_post()
+            for node in post:
+                node_seq = node.get_seq()
+                if node_seq not in visited:
+                    new_visited = visited.copy()
+                    new_visited.add(node_seq)
+                    new_path = path + [node_seq]
+                    path_to_explore.append((node, new_path, new_visited))
 
-            current_node = post[0]
+        return longest_path
 
-            if current_node.get_seq() in path:
-                break
-        print(path)
-        return path
-    #Renvoie un path au "hasard" il faut modifier pour sélectionner le + long
+    def assemble_sequence(self):
+        path = self.simple_path()
+        if not path:
+            return ""
+        sequence = path[0]
+        for node in path[1:]:
+            sequence += node[-1]  # on ajoute seulement la dernière lettre
+        return sequence
+    
 if __name__ == "__main__":
     f = read_gz("Level0.fa.gz")
     kmers_dict = {}
     for seq in f:
         kmers_dict.update(kmers(str(seq.seq), 5))
     g = DeBruijnGraph(kmers_dict)
-    g.simple_path("CCCAC")
+    print(g.simple_path("CCCAC"))
 
 #CCCACGGACGCCAGAACGGGCGTTCTCCCTAGCGTGCGCCCTGCAGAACGTTCGCGAGAACGACAGAACTCACGGACGTTCTCCCTATCGACCGTGCGCAAGAACGTCCGGCCGTACGCCCTATAGAACGAGCGCCCGCTCGGCCGTGCTATAGAACTCTCGGCCTCACGGAAGAACGTTCGTGCGCCAGAACTATCTCACGCCCTAAAGTG
