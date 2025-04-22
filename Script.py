@@ -1,5 +1,6 @@
 import gzip
-from Bio import SeqIO    
+from Bio import SeqIO   
+from DeBruijnGraph import * 
     
 def read_gz(filename):
         """
@@ -32,22 +33,47 @@ def kmers (sequence, k):
             kmers[kmer] = 1
         else:
             kmers[kmer] += 1
-    return kmers    
-
-def graphe_de_de_Bruijn(filename):
-    for read in read_gz(filename):
-        read_seq = str(read.seq)
-        list_kmers = kmers(read_seq, 3)
-    pass
-
+    return kmers   
 
 if __name__ == '__main__':
-    s = "AAAA"
-    t = "ACCC"
-    suff = s[-1]
-    if t.startswith(suff):
-        print ("oui")
-    else : 
-        print ("non")
+    # Test with a simple sequence
+    test_sequence = "ATGGGTGGTGGTATG"
+    kmers_dict = kmers(test_sequence, 3)
 
-    print(kmers("AAAAATTCCCCTTCTGGG", 5))
+    dbg = DeBruijnGraph(kmers_dict)
+    print(f"Graph: {dict(dbg.get_graph())}")
+    print(f"Start node: {dbg.get_start()}")
+    print(f"Simple path: {dbg.simple_path()}")
+    assembled_seq = dbg.assemble_sequence()
+    print(f"Assembled sequence: {assembled_seq}")
+    print(f"Original sequence: {test_sequence}")
+    print(f"Correct assembly: {test_sequence == assembled_seq}")
+
+    #Ne fonctionne pas a-t-on des répétitions dans les séquences fournies
+
+    # Test with the longer sequence
+    f = read_gz("Level0.fa.gz")
+    kmers_dict = {}
+    for seq in f:
+        kmers_dict.update(kmers(str(seq.seq), 21))
+
+    longer_sequence = "CCCACGGACGCCAGAACGGGCGTTCTCCCTAGCGTGCGCCCTGCAGAACGTTCGCGAGAACGACAGAACTCACGGACGTTCTCCCTATCGACCGTGCGCAAGAACGTCCGGCCGTACGCCCTATAGAACGAGCGCCCGCTCGGCCGTGCTATAGAACTCTCGGCCTCACGGAAGAACGTTCGTGCGCCAGAACTATCTCACGCCCTAAAGTG"
+    
+    dbg = DeBruijnGraph(kmers_dict)
+    assembled_long_seq = dbg.assemble_sequence()
+    print("\nLong sequence test:")
+    print(f"Original length: {len(longer_sequence)}")
+    print(f"Assembled length: {len(assembled_long_seq)}")
+    print(f"Correct assembly: {longer_sequence == assembled_long_seq}")
+
+    #Test with level1
+    f2 = read_gz("Level1.fa.gz")
+
+    kmers_dict2 = {}
+    for seq in f2:
+        kmers_dict2.update(kmers(str(seq.seq), 21))
+
+    dbg2 = DeBruijnGraph(kmers_dict2)
+    assembled_seq2 = dbg2.assemble_sequence()
+    print(assembled_seq2)
+    #Une séquence est bien assemblée voir si c'est la bonne
