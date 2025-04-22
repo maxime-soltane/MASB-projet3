@@ -35,6 +35,20 @@ def kmers (sequence, k):
             kmers[kmer] += 1
     return kmers   
 
+def kmers_filter (kmers_dict, threshold = 1):
+    """
+    
+    >>> k_dict = {"A" : 4, "B" : 1, "C" : 12, "D" : 5}
+    >>> kmers_filter(k_dict, 5)
+    {'C': 12, 'D': 5}
+    """
+    f_kmers = {}
+    for kmer, count in kmers_dict.items():
+        if count >= threshold:
+            f_kmers[kmer] = count
+    
+    return f_kmers
+
 if __name__ == '__main__':
     # Test with a simple sequence
     test_sequence = "ATGGGTGGTGGTATG"
@@ -72,8 +86,11 @@ if __name__ == '__main__':
     kmers_dict2 = {}
     for seq in f2:
         kmers_dict2.update(kmers(str(seq.seq), 21))
+    print(len(kmers_dict2))
+    f_kmers = kmers_filter(kmers_dict2)
+    print(len(f_kmers))
 
-    dbg2 = DeBruijnGraph(kmers_dict2)
+    dbg2 = DeBruijnGraph(f_kmers)
     assembled_seq2 = dbg2.assemble_sequence()
     print(assembled_seq2)
-    #Une séquence est bien assemblée voir si c'est la bonne
+    #Une séquence est bien assemblée voir si c'est la bonne mais tous les kmers ne sont vu qu'une fois 
