@@ -1,6 +1,7 @@
 import gzip
 from Bio import SeqIO   
 from DeBruijnGraph import * 
+from collections import defaultdict
     
 def read_gz(filename):
         """
@@ -83,16 +84,19 @@ if __name__ == '__main__':
     #Test with level1
     f2 = read_gz("Level1.fa.gz")
 
-    kmers_dict2 = {}
+    kmers_dict2 = defaultdict(int)  
     for seq in f2:
-        kmers_dict2.update(kmers(str(seq.seq), 14))
-    
-    print(kmers_dict2)
-    f_kmers = kmers_filter(kmers_dict2, 2)
-    print(len(f_kmers))
+        for kmer, count in kmers(str(seq.seq), 21).items():
+            kmers_dict2[kmer] += count  
+
+    #print(kmers_dict2)
+    f_kmers = kmers_filter(kmers_dict2, 3)
     print(len(kmers_dict2))
+
+    print(len(f_kmers))
+    print(f_kmers)
 
     dbg2 = DeBruijnGraph(f_kmers)
     assembled_seq2 = dbg2.assemble_sequence()
-    print(assembled_seq2)
-    #Une séquence est bien assemblée voir si c'est la bonne
+    #print(assembled_seq2)
+    #Une séquence est assemblée mais bizarre
