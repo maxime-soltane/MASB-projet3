@@ -85,12 +85,14 @@ if __name__ == '__main__':
 
     kmers_dict2 = {}
     for seq in f2:
-        kmers_dict2.update(kmers(str(seq.seq), 21))
-    print(len(kmers_dict2))
-    f_kmers = kmers_filter(kmers_dict2)
+        kmers_dict2.update(kmers(str(seq.seq), 14))
+    
+    print(kmers_dict2)
+    f_kmers = kmers_filter(kmers_dict2, 2)
     print(len(f_kmers))
+    print(len(kmers_dict2))
 
     dbg2 = DeBruijnGraph(f_kmers)
     assembled_seq2 = dbg2.assemble_sequence()
     print(assembled_seq2)
-    #Une séquence est bien assemblée voir si c'est la bonne mais tous les kmers ne sont vu qu'une fois 
+    #Une séquence est bien assemblée voir si c'est la bonne
