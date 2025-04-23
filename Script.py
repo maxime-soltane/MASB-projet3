@@ -51,6 +51,13 @@ def kmers_filter (kmers_dict, threshold = 1):
     
     return f_kmers
 
+def write_fasta (seq, filename = "assemble_seq.fasta"):
+    with open (filename, "w") as f :
+        f.write("> assembled sequence\n")
+        for i in range(0, len(seq), 80):
+            f.write(seq[i:i+60] + "\n")
+
+
 if __name__ == '__main__':
     # Test with a simple sequence
     test_sequence = "ATGGGTGGTGGTATG"
@@ -103,3 +110,5 @@ if __name__ == '__main__':
     
     end = time()
     print(f"Temps d'exécution sur level1 : {end-start}")
+
+    write_fasta(assembled_seq2)
