@@ -91,16 +91,15 @@ if __name__ == '__main__':
     for seq in f2:
         for kmer, count in kmers(str(seq.seq), 21).items():
             kmers_dict2[kmer] += count  
+    print(f"Nombre de kmers avant filtrage : {len(kmers_dict2)}")
 
     f_kmers = kmers_filter(kmers_dict2, 3)
-    print(len(kmers_dict2))
-
-    print(len(f_kmers))
-    print(f_kmers)
+    print(f"Nombre de kmers restant après filtrage : {len(f_kmers)}")
 
     dbg2 = DeBruijnGraph(f_kmers)
     assembled_seq2 = dbg2.assemble_sequence()
-    print(assembled_seq2)
+    print(f"250 premiers nucléotides de la séquence assemblé : {assembled_seq2[0:250]}")
+    print(f"Taille de la séquence assemblée : {len(assembled_seq2)}")
+    
     end = time()
     print(f"Temps d'exécution sur level1 : {end-start}")
-    #Une séquence est assemblée mais bizarre
