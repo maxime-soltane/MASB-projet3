@@ -45,11 +45,15 @@ class DeBruijnGraph :
 
     def assemble_sequence(self):
         path = self.simple_path()
+
         if not path:
             return ""
+        
         contig = path[0]
+        
         for node in path[1:]:
             contig += node[-1]
+
         return contig
 
 import gzip

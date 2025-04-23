@@ -2,6 +2,7 @@ import gzip
 from Bio import SeqIO   
 from DeBruijnGraph import * 
 from collections import defaultdict
+from time import time
     
 def read_gz(filename):
         """
@@ -57,7 +58,6 @@ if __name__ == '__main__':
 
     dbg = DeBruijnGraph(kmers_dict)
     print(f"Graph: {dict(dbg.get_graph())}")
-    print(f"Start node: {dbg.get_start()}")
     print(f"Simple path: {dbg.simple_path()}")
     assembled_seq = dbg.assemble_sequence()
     print(f"Assembled sequence: {assembled_seq}")
@@ -82,6 +82,9 @@ if __name__ == '__main__':
     print(f"Correct assembly: {longer_sequence == assembled_long_seq}")
 
     #Test with level1
+    print("")
+    print("Test with level1")
+    start = time()
     f2 = read_gz("Level1.fa.gz")
 
     kmers_dict2 = defaultdict(int)  
@@ -89,7 +92,6 @@ if __name__ == '__main__':
         for kmer, count in kmers(str(seq.seq), 21).items():
             kmers_dict2[kmer] += count  
 
-    #print(kmers_dict2)
     f_kmers = kmers_filter(kmers_dict2, 3)
     print(len(kmers_dict2))
 
@@ -98,5 +100,7 @@ if __name__ == '__main__':
 
     dbg2 = DeBruijnGraph(f_kmers)
     assembled_seq2 = dbg2.assemble_sequence()
-    #print(assembled_seq2)
+    print(assembled_seq2)
+    end = time()
+    print(f"Temps d'exécution sur level1 : {end-start}")
     #Une séquence est assemblée mais bizarre
