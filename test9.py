@@ -68,36 +68,56 @@ class DeBruijnGraph :
                     preds.append(prefix)
         return preds
 
-    def simple_path(self, kmer: str) -> List[str]:
+    def simple_path(self, kmer) -> List[str]:
+    
         path = []
-
+    
+    
         start = kmer[:-1]
+    
+    
         if start not in self.graph:
             return path
 
-    # Backward: chercher le début du chemin
-        current = start
+        current = start  
         while True:
             preds = self.get_predecessors(current)
+        
             if len(preds) != 1:
                 break
+        
             if len(self.get_successors(preds[0])) != 1:
                 break
+        
+            kmer_to_remove = preds[0] + current[-1]
+        
+            if kmer_to_remove in self.__kmers_dict:
+                del self.__kmers_dict[kmer_to_remove]
+        
             current = preds[0]
     
         path.append(current)
 
         while True:
+
             succs = self.get_successors(current)
+        
             if len(succs) != 1:
                 break
+        
             if len(self.get_predecessors(succs[0])) != 1:
                 break
+        
+            kmer_to_remove = current + succs[0][-1]
+
+            if kmer_to_remove in self.__kmers_dict:
+                del self.__kmers_dict[kmer_to_remove]
+
             current = succs[0]
+        
             path.append(current)
 
         return path
-
 
     def assemble_sequence(self, kmer) -> str:
         """
@@ -123,6 +143,30 @@ class DeBruijnGraph :
 
         return contig
 
+    def get_all_contigs(self, output_file: str = "all_contig.fasta") -> None:
+    # Make a copy of remaining kmers to process
+        kmers_to_process = set(self.__kmers_dict.keys())
+    
+        with open(output_file, 'w') as out_file:
+            while kmers_to_process:
+            # Take any remaining kmer
+                kmer = kmers_to_process.pop()
+            
+            # Assemble the contig starting from this kmer
+                contig = self.assemble_sequence(kmer)
+            
+                if contig:
+                # Write the contig to the output file
+                    out_file.write(contig + '\n')
+                
+                # Remove all kmers that were used in this contig
+                    kmer_length = len(kmer)
+                    for i in range(len(contig) - kmer_length + 1):
+                        contig_kmer = contig[i:i+kmer_length]
+                        if contig_kmer in kmers_to_process:
+                            kmers_to_process.remove(contig_kmer)
+
+
 if __name__ == '__main__':
     # Test with the longer sequence
     f = read_gz("Level0.fa.gz")
@@ -139,3 +183,4 @@ if __name__ == '__main__':
     print(f"Original length: {len(longer_sequence)}")
     print(f"Assembled length: {len(assembled_seq)}")
     print(f"Correct assembly: {longer_sequence == assembled_seq}")
+    dbg.get_all_contigs()

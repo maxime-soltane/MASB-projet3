@@ -81,13 +81,6 @@ def kmers_filter (kmers_dict: Dict[str, int], threshold: int= 1) -> Dict[str, in
     
     return f_kmers
 
-def write_fasta (seq, filename = "assemble_seq.fasta"):
-    with open (filename, "w") as f :
-        f.write("> assembled sequence\n")
-        for i in range(0, len(seq), 80):
-            f.write(seq[i:i+60] + "\n")
-
-
 if __name__ == '__main__':
     # Test with the longer sequence
     f = read_gz("Level0.fa.gz")
