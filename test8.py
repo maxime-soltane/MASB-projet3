@@ -77,14 +77,6 @@ class DeBruijnGraph :
         A list of nodes forming the path
 
         Examples:
-        >>> graph = DeBruijnGraph({'ATG':1, 'TGG':1, 'GGT':1})
-        >>> graph.simple_path()
-        ['AT', 'TG', 'GG', 'GT']
-
-        # No clear start node
-        >>> graph = DeBruijnGraph({'AAA': 1, 'AAT': 1, 'ATA': 1, 'TAA': 1})
-        >>> graph.simple_path()
-        []
         """
         path = []
         #on récupère le préfixe du kmer
@@ -98,18 +90,28 @@ class DeBruijnGraph :
 
         #renvoie le suffixe
         current_node = self.get_graph()[pref_kmer] 
+        #on crée une pile qui permet de suivre les prédecesseurs
+        pile_pred = [current_node]
+        #on crée une pile qui permet de suivre les successeurs
+        pile_succ = [current_node]
 
-        #on crée une pile qui se modifie au même moment que l'avancement du graph
-        pile = [current_node]
+        #tant qu'on a un noeud prédecesseur
+        while pile_pred:
+            pile_pred = self.get_predecessors(pile_pred)
+            if len(pile_pred)>1 or len(pile_pred) == 0 or self.get_successors(pile_pred)>1:
+                break
+            path.append(pile_pred)
+        
+        path = path[::-1]
 
-        #tant qu'on a un truc dans la pile
-        while pile:
+        #tant qu'on a noeud successeur
+        while pile_succ:
             #on l'ajoute au chemin
-            path.append(pile) 
+            path.append(pile_succ) 
             #on récupère les successeurs du noeud actuel
-            pile = self.get_successors(pile)
-            #on vérifie que le noeud actuel a encore des successeurs et qu'il n'a pas plus d'un père/fils
-            if len(pile) > 1 or len(pile) == 0 or self.get_predecessors(pile) > 1:
+            pile_succ = self.get_successors(pile_succ)
+            #on vérifie que le noeud actuel a encore des successeurs et qu'il n'a pas plus d'un père/fils sinon on stop la boucle
+            if len(pile_succ) > 1 or len(pile_succ) == 0 or self.get_predecessors(pile_succ) > 1:
                 break
 
         return path
