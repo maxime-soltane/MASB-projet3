@@ -82,42 +82,30 @@ def kmers_filter (kmers_dict: Dict[str, int], threshold: int= 1) -> Dict[str, in
     return f_kmers
 
 if __name__ == '__main__':
-    # Test with the longer sequence
+    #Test with level0
+    start = time()
     f = read_gz("Level0.fa.gz")
-    kmers_dict = {}
-    for seq in f:
-        kmers_dict.update(kmers(str(seq.seq), 21))
 
-    longer_sequence = "CCCACGGACGCCAGAACGGGCGTTCTCCCTAGCGTGCGCCCTGCAGAACGTTCGCGAGAACGACAGAACTCACGGACGTTCTCCCTATCGACCGTGCGCAAGAACGTCCGGCCGTACGCCCTATAGAACGAGCGCCCGCTCGGCCGTGCTATAGAACTCTCGGCCTCACGGAAGAACGTTCGTGCGCCAGAACTATCTCACGCCCTAAAGTG"
-    
-    dbg = DeBruijnGraph(kmers_dict)
-    assembled_long_seq = dbg.assemble_sequence()
-    print("\nLong sequence test:")
-    print(f"Original length: {len(longer_sequence)}")
-    print(f"Assembled length: {len(assembled_long_seq)}")
-    print(f"Correct assembly: {longer_sequence == assembled_long_seq}")
+    kmers_dict = defaultdict(int)
+    for seq in f:
+        for kmer, count in kmers(str(seq.seq), 21).items():
+            kmers_dict[kmer] += count
+
+    dbg = Graph(kmers_dict)
+    dbg.get_all_contigs("level0_contig.fa")
+    end = time()
+    print(f"Temps d'execution sur Level0 = {end-start}\n")
 
     #Test with level1
-    print("")
-    print("Test with level1")
-    start = time()
+    start1 =time()
     f2 = read_gz("Level1.fa.gz")
 
-    kmers_dict2 = defaultdict(int)  
+    kmers_dict2 = defaultdict(int)
     for seq in f2:
         for kmer, count in kmers(str(seq.seq), 21).items():
-            kmers_dict2[kmer] += count  
-    print(f"Nombre de kmers avant filtrage : {len(kmers_dict2)}")
-
-    f_kmers = kmers_filter(kmers_dict2, 3)
-    print(f"Nombre de kmers restant après filtrage : {len(f_kmers)}")
-
-    dbg2 = DeBruijnGraph(f_kmers)
-    assembled_seq2 = dbg2.assemble_sequence()
-    print(f"250 premiers nucléotides de la séquence assemblé : {assembled_seq2[0:250]}")
-    print(f"Taille de la séquence assemblée : {len(assembled_seq2)}")
+            kmers_dict2[kmer] += count
     
-    end = time()
-    print(f"Temps d'exécution sur level1 : {end-start}")
-
-    write_fasta(assembled_seq2)
+    dbg2 = Graph(kmers_dict2)
+    dbg2.get_all_contigs("level1_contig.fa")
+    end1 = time()
+    print(f"Temps d'execution sur Level1 = {end1-start1}\n")

@@ -1,15 +1,11 @@
 from collections import defaultdict
-from typing import Dict, List
 
-class DeBruijnGraph :
-    """
-    A class that represents a de Bruijn graph built with a collection of kmers.
-    The graph is used to assembly genomes by overlapping kmers. 
-    """
+class Graph:
 
-    def __init__(self, kmers_dict: Dict[str, int]) -> None:
+    def __init__(self, kmers_dict: dict):
         self.__kmers_dict = kmers_dict
         self.graph = defaultdict(list)
+        self.reverse_graph = defaultdict(list)
         self.__build_connections()
 
     def __build_connections (self) -> None:
@@ -20,14 +16,15 @@ class DeBruijnGraph :
             prefix = kmer[:-1]
             suffix = kmer[1:]
             self.graph[prefix].append(suffix)
+            self.reverse_graph[suffix].append(prefix)
 
-    def get_graph(self) -> Dict[str, List[str]]:
+    def get_graph(self):
         """
         Gets the graph representation.
         """
         return self.graph
     
-    def get_successors(self, node: str) -> List[str]:
+    def get_successors(self, node: str):
         """
         Gets the list of successors for a node.
 
@@ -44,7 +41,7 @@ class DeBruijnGraph :
         """
         return self.graph.get(node, [])
 
-    def get_predecessors(self, node: str) -> List[str]:
+    def get_predecessors(self, node: str):
         """
         Gets the list of predecessors for a node.
 
@@ -59,59 +56,50 @@ class DeBruijnGraph :
         >>> graph.get_predecessors('TG')
         ['AT']
         """
-        preds = []
-        for prefix in self.graph:
-            for suffix in self.graph[prefix]:
-                if suffix == node:
-                    preds.append(prefix)
-        return preds
+        return self.reverse_graph.get(node, [])
+    
+    def __simple_path(self, kmer):
+        path = []
+        start = kmer[:-1]
+    
+        if start not in self.graph:
+            return path
 
-    def simple_path(self) -> List[str]:
-        """
-        Tries to find a simple path starting from a node with no predecessors.
-        Only follows paths with a single successor.
+        current = start  
+        while True:
+            preds = self.get_predecessors(current)
+            if len(preds) != 1:
+                break
+            if len(self.get_successors(preds[0])) != 1:
+                break
 
-        Returns:
-        A list of nodes forming the path
+            kmer_to_remove = preds[0] + current[-1]
+            if kmer_to_remove in self.__kmers_dict:
+                del self.__kmers_dict[kmer_to_remove]
+        
+            current = preds[0]
+    
+        path.append(current)
 
-        Examples:
-        >>> graph = DeBruijnGraph({'ATG':1, 'TGG':1, 'GGT':1})
-        >>> graph.simple_path()
-        ['AT', 'TG', 'GG', 'GT']
+        while True:
+            succs = self.get_successors(current)
+            if len(succs) != 1:
+                break
+            if len(self.get_predecessors(succs[0])) != 1:
+                break
+        
+            kmer_to_remove = current + succs[0][-1]
+            if kmer_to_remove in self.__kmers_dict:
+                del self.__kmers_dict[kmer_to_remove]
 
-        # No clear start node
-        >>> graph = DeBruijnGraph({'AAA': 1, 'AAT': 1, 'ATA': 1, 'TAA': 1})
-        >>> graph.simple_path()
-        []
-        """
-        visited = set()
-        for start in self.graph:
-            if len(self.get_predecessors(start)) == 0:
-                path = [start]
-                current = start
-                while current in self.graph and len(self.graph[current]) == 1:
-                    next_node = self.graph[current][0]
-                    if next_node in visited:
-                        break
-                    path.append(next_node)
-                    visited.add(current)
-                    current = next_node
-                return path
-        return []
+            current = succs[0]
+        
+            path.append(current)
 
-    def assemble_sequence(self) -> str:
-        """
-        Assembles a sequence from the simple path.
-
-        Returns:
-        An assembled nucleotidic sequence
-
-        Example:
-        >>> graph = DeBruijnGraph({'ATG': 1, 'TGG': 1, 'GGT': 1})
-        >>> graph.assemble_sequence()
-        'ATGGT'
-        """
-        path = self.simple_path()
+        return path
+    
+    def __assemble_sequence(self, kmer):
+        path = self.__simple_path(kmer)
 
         if not path:
             return ""
@@ -122,3 +110,21 @@ class DeBruijnGraph :
             contig += node[-1]
 
         return contig
+    
+
+    def get_all_contigs(self, output_file = "output.fasta"):
+        contig_count = 1
+        with open(output_file, 'w') as f:
+            while self.__kmers_dict:
+                
+                kmer, _ = self.__kmers_dict.popitem()
+
+                contig = self.__assemble_sequence(kmer)
+
+                if contig:
+                    f.write(f">contig_{contig_count}_from_{kmer}\n")
+                    for i in range(0, len(contig), 60):
+                        f.write(contig[i:i+60] + '\n')
+                    contig_count += 1
+
+        print("Le fichier a été créé.")
