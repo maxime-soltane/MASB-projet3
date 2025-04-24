@@ -89,20 +89,6 @@ def write_fasta (seq, filename = "assemble_seq.fasta"):
 
 
 if __name__ == '__main__':
-    # Test with a simple sequence
-    test_sequence = "ATGGGTGGTGGTATG"
-    kmers_dict = kmers(test_sequence, 3)
-
-    dbg = DeBruijnGraph(kmers_dict)
-    print(f"Graph: {dict(dbg.get_graph())}")
-    print(f"Simple path: {dbg.simple_path()}")
-    assembled_seq = dbg.assemble_sequence()
-    print(f"Assembled sequence: {assembled_seq}")
-    print(f"Original sequence: {test_sequence}")
-    print(f"Correct assembly: {test_sequence == assembled_seq}")
-
-    #Ne fonctionne pas a-t-on des répétitions dans les séquences fournies
-
     # Test with the longer sequence
     f = read_gz("Level0.fa.gz")
     kmers_dict = {}
