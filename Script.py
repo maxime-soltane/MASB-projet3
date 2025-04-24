@@ -3,13 +3,14 @@ from Bio import SeqIO
 from DeBruijnGraph import * 
 from collections import defaultdict
 from time import time
+from typing import Dict
     
-def read_gz(filename):
+def read_gz(filename: str):
         """
         Open a Fasta or FastQ file, compressed (.gz) or not, in reading mode and return sequence's iterator.
 
         Parameters:
-        :param filename: the name of the file to work on
+        filename: the name of the file to work on
 
         Raises:
         ValueError: if file format isn't supported
@@ -27,7 +28,25 @@ def read_gz(filename):
             else:  
                 raise ValueError(f"file format not supported: '{filename}'")
             
-def kmers (sequence, k):
+def kmers (sequence: str, k: int) -> Dict[str, int]:
+    """
+    Generates all kmers from a sequence and count their occurrences.
+
+    Parameters:
+    sequence: A nucleotidic sequence
+    k: The size of the kmer
+
+    Returns:
+    A dictionary of kmers and their counts
+
+    Examples:
+    >>> kmers("ATCGGCAT", 3)
+    {'ATC': 1, 'TCG': 1, 'CGG': 1, 'GGC': 1, 'GCA': 1, 'CAT': 1}
+    >>> kmers("AAAAAA", 2)
+    {'AA': 5}
+    >>> kmers("ATG", 5)
+    {}
+    """
     kmers = {}
     for pos in range(len(sequence)-k+1):
         kmer = sequence[pos:pos+k]
@@ -37,12 +56,23 @@ def kmers (sequence, k):
             kmers[kmer] += 1
     return kmers   
 
-def kmers_filter (kmers_dict, threshold = 1):
+def kmers_filter (kmers_dict: Dict[str, int], threshold: int= 1) -> Dict[str, int]:
     """
-    
+    Filters kmers according to a minimum count threshold.
+
+    Parameters:
+    kmers_dict: The dictionary of kmer counts
+    threshold: The minimum count to keep a kmer
+
+    Returns:
+    A filtered dictionnary of kmers
+
+    Examples:
     >>> k_dict = {"A" : 4, "B" : 1, "C" : 12, "D" : 5}
     >>> kmers_filter(k_dict, 5)
     {'C': 12, 'D': 5}
+    >>> kmers_filter({'A': 2, 'T': 3}, 3)
+    {'T': 3}
     """
     f_kmers = {}
     for kmer, count in kmers_dict.items():
