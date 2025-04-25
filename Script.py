@@ -105,9 +105,9 @@ if __name__ == '__main__':
         for kmer, count in kmers(str(seq.seq), 31).items():
             kmers_dict2[kmer] += count
 
-    f2_kmers = kmers_filter(kmers_dict2, 5)
+    f2_kmers = kmers_filter(kmers_dict2, 4)
 
     dbg2 = Graph(f2_kmers)
-    dbg2.get_all_contigs("level1_contig.fa_21_5")
+    dbg2.get_all_contigs("level1_contig.fa_31_4")
     end1 = time()
     print(f"Temps d'execution sur Level1 = {end1-start1}\n")
