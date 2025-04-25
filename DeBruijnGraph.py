@@ -1,6 +1,10 @@
 from collections import defaultdict
-
+from typing import Dict, List
 class Graph:
+    """
+    A class that represents a de Bruijn graph built from a collection of kmers.
+    This graph will be used to assemble genomes.
+    """
 
     def __init__(self, kmers_dict: dict):
         self.__kmers_dict = kmers_dict
@@ -18,13 +22,16 @@ class Graph:
             self.graph[prefix].append(suffix)
             self.reverse_graph[suffix].append(prefix)
 
-    def get_graph(self):
+    def get_graph(self) -> Dict[str, List[str]]:
         """
         Gets the graph representation.
+
+        Returns:
+        A dictionary of prefix
         """
         return self.graph
     
-    def get_successors(self, node: str):
+    def get_successors(self, node: str) -> List[str]:
         """
         Gets the list of successors for a node.
 
@@ -35,13 +42,13 @@ class Graph:
         A list of successor nodes
 
         Example:
-        >>> graph = DeBruijnGraph({'ATG':1})
+        >>> graph = Graph({'ATG':1})
         >>> graph.get_successors('AT')
         ['TG']
         """
         return self.graph.get(node, [])
 
-    def get_predecessors(self, node: str):
+    def get_predecessors(self, node: str) -> List[str]:
         """
         Gets the list of predecessors for a node.
 
@@ -52,13 +59,27 @@ class Graph:
         A list of predecessors nodes
 
         Example:
-        >>> graph = DeBruijnGraph({'ATG':1})
+        >>> graph = Graph({'ATG':1})
         >>> graph.get_predecessors('TG')
         ['AT']
         """
         return self.reverse_graph.get(node, [])
     
-    def __simple_path(self, kmer):
+    def __simple_path(self, kmer: str) -> List[str]:
+        """
+        Computes a simple path starting from a given kmer.
+
+        Parameters:
+        kmer: A starting kmer from the kmer dictionary
+
+        Returns:
+        A list of nodes constructing the path
+
+        Example:
+        >>> g = Graph({'ATG':1, 'TGG':1, 'GGA':1})
+        >>> g._Graph__simple_path('TGG')
+        ['AT', 'TG', 'GG', 'GA']
+        """
         path = []
         start = kmer[:-1]
     
@@ -98,7 +119,21 @@ class Graph:
 
         return path
     
-    def __assemble_sequence(self, kmer):
+    def __assemble_sequence(self, kmer: int) -> str:
+        """
+        Assembles a contig sequence starting from the given kmer.
+
+        Parameter:
+        kmer: A starting kmer
+
+        Returns:
+        A string representing the assembled contig
+
+        Example:
+        >>> graph = Graph({'ATG':1, 'TGG':1, 'GGA':1})
+        >>> graph._Graph__assemble_sequence('TGG')
+        'ATGGA'
+        """
         path = self.__simple_path(kmer)
 
         if not path:
@@ -112,7 +147,13 @@ class Graph:
         return contig
     
 
-    def get_all_contigs(self, output_file = "output.fasta"):
+    def get_all_contigs(self, output_file: str = "output.fasta") -> None:
+        """
+        Assemble all contigs and write them to a Fasta file.
+
+        Parameter:
+        output_file: output Fasta filename
+        """
         contig_count = 1
         with open(output_file, 'w') as f:
             while self.__kmers_dict:
