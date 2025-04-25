@@ -97,7 +97,7 @@ if __name__ == '__main__':
     print(f"Temps d'execution sur Level0 = {end-start}\n")
 
     #Test with level1
-    start1 =time()
+    start1 =time() 
     f2 = read_gz("Level1.fa.gz")
 
     kmers_dict2 = defaultdict(int)
