@@ -105,7 +105,7 @@ if __name__ == '__main__':
         for kmer, count in kmers(str(seq.seq), 21).items():
             kmers_dict2[kmer] += count
 
-    f2_kmers = kmers_filter(kmers_dict2, 5)
+    f2_kmers = kmers_filter(kmers_dict2, 2)
 
     dbg2 = Graph(f2_kmers)
     dbg2.get_all_contigs("level1_contig.fa")
