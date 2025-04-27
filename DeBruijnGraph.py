@@ -78,48 +78,43 @@ class Graph:
         Example:
         >>> g = Graph({'ATG':1, 'TGG':1, 'GGA':1})
         >>> g._Graph__simple_path('TGG')
-        ['AT', 'TG', 'GG', 'GA']
+        (['AT', 'TG', 'GG', 'GA'], {'TGG', 'ATG', 'GGA'})
         """
         path = []
+        kmers_in_path = set()
         start = kmer[:-1]
     
         if start not in self.graph:
-            return path
+            return path, kmers_in_path
 
         current = start  
         while True:
             preds = self.get_predecessors(current)
-            if len(preds) != 1:
-                break
-            if len(self.get_successors(preds[0])) != 1:
+            if len(preds) != 1 or len(self.get_successors(preds[0])) != 1:
                 break
 
             kmer_to_remove = preds[0] + current[-1]
-            if kmer_to_remove in self.__kmers_dict:
-                del self.__kmers_dict[kmer_to_remove]
-        
+            kmers_in_path.add(kmer_to_remove)
+
             current = preds[0]
     
         path.append(current)
 
         while True:
             succs = self.get_successors(current)
-            if len(succs) != 1:
-                break
-            if len(self.get_predecessors(succs[0])) != 1:
+            if len(succs) != 1 or len(self.get_predecessors(succs[0])) != 1:
                 break
         
             kmer_to_remove = current + succs[0][-1]
-            if kmer_to_remove in self.__kmers_dict:
-                del self.__kmers_dict[kmer_to_remove]
+            kmers_in_path.add(kmer_to_remove)
 
             current = succs[0]
         
             path.append(current)
 
-        return path
+        return path, kmers_in_path
     
-    def __assemble_sequence(self, kmer: int) -> str:
+    def __assemble_sequence(self, path) -> str:
         """
         Assembles a contig sequence starting from the given kmer.
 
@@ -131,22 +126,15 @@ class Graph:
 
         Example:
         >>> graph = Graph({'ATG':1, 'TGG':1, 'GGA':1})
-        >>> graph._Graph__assemble_sequence('TGG')
+        >>> path, _ = graph._Graph__simple_path('TGG')
+        >>> graph._Graph__assemble_sequence(path)
         'ATGGA'
         """
-        path = self.__simple_path(kmer)
-
         if not path:
             return ""
         
-        contig = path[0]
-        
-        for node in path[1:]:
-            contig += node[-1]
-
-        return contig
+        return path[0] + "".join(node[-1] for node in path[1:])
     
-
     def get_all_contigs(self, output_file: str = "output.fasta") -> None:
         """
         Assemble all contigs and write them to a Fasta file.
@@ -158,14 +146,35 @@ class Graph:
         with open(output_file, 'w') as f:
             while self.__kmers_dict:
                 
-                kmer, _ = self.__kmers_dict.popitem()
+                kmer = next(iter(self.__kmers_dict))
 
-                contig = self.__assemble_sequence(kmer)
+                path, kmers_in_path = self.__simple_path(kmer)
+                
+                cleaned_path, kmers_to_remove = self.tip_removal(path, kmers_in_path)
 
-                if contig:
-                    f.write(f">contig_{contig_count}_from_{kmer}\n")
-                    for i in range(0, len(contig), 60):
-                        f.write(contig[i:i+60] + '\n')
-                    contig_count += 1
+                if not cleaned_path:
+                    for kmer in kmers_to_remove: 
+                        self.__kmers_dict.pop(kmer, None)
 
-        print("Le fichier a été créé.")
+                contig = self.__assemble_sequence(cleaned_path)
+
+                for kmer in kmers_in_path:
+                    self.__kmers_dict.pop(kmer, None)
+                
+                f.write(f">contig_{contig_count}_of_length_{len(contig)}\n")
+                for i in range(0, len(contig), 60):
+                    f.write(contig[i:i+60] + '\n')
+                contig_count += 1
+
+        print(f"Contigs written to {output_file}")
+    
+    def tip_removal(self, path, kmers_in_path, threshold=1):
+        #chemin vide
+        if not path :
+            return path, set()
+    
+        #si court et dernier sans successeur = dead-end = tip
+        if not self.get_successors(path[-1])and len(path) <= threshold:
+            return [], kmers_in_path
+        
+        return path, set()
