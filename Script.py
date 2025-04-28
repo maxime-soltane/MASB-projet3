@@ -48,7 +48,7 @@ def kmers (sequence: str, k: int) -> Dict[str, int]:
     {}
     """
     kmers = defaultdict(int)
-    #parcours toutes els positions où des kmers sont possibles
+    #parcours toutes les positions où des kmers sont possibles
     for pos in range(len(sequence)-k+1):
         #les ajoute au dico avec leurs nombre d'occurrences
         kmers[sequence[pos:pos+k]] += 1
@@ -90,7 +90,7 @@ if __name__ == '__main__':
             kmers_dict[kmer] += count
 
     dbg = Graph(kmers_dict)
-    dbg.get_all_contigs("level0_contig.fa")
+    dbg.test("level0_contig.fa")
     end = time()
     print(f"Temps d'execution sur Level0 = {end-start}\n")
 
@@ -106,22 +106,21 @@ if __name__ == '__main__':
     f2_kmers = kmers_filter(kmers_dict2, 4)
 
     dbg2 = Graph(f2_kmers)
-    dbg2.get_all_contigs("level1_contig_tr_31_4.fa")
+    dbg2.test("level1_contig_tr_31_4.fa", 5)
     end1 = time()
     print(f"Temps d'execution sur Level1 = {end1-start1}\n")
 
     #Test with level2
-    start2 =time() 
+    start2 = time() 
     f3 = read_gz("Level2.fa.gz")
-
+    
     kmers_dict3 = defaultdict(int)
     for seq in f3:
         for kmer, count in kmers(str(seq.seq), 51).items():
             kmers_dict3[kmer] += count
 
     f3_kmers = kmers_filter(kmers_dict3, 3)
-
     dbg3 = Graph(f3_kmers)
-    dbg3.get_all_contigs("level2_contig_tr_31_3.fa")
+    dbg3.test("level2_contig_tr_51_3.fa")
     end2 = time()
     print(f"Temps d'execution sur Level1 = {end2-start2}\n")

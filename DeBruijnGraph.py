@@ -136,6 +136,41 @@ class Graph:
         
         return path[0] + "".join(node[-1] for node in path[1:])
     
+    def test(self, output_file: str = "output.fasta", tip_threshold=1) -> None:
+        contig_count = 1
+
+        with open(output_file, 'w') as f:
+            while self.__kmers_dict:
+                kmer = next(iter(self.__kmers_dict)) #Prend le prochain Kmers
+
+                path, kmers_in_path = self.__simple_path(kmer)
+
+                if self.is_tip(path, tip_threshold):
+                    for kmer in kmers_in_path:
+                        self.__kmers_dict.pop(kmer, None)
+                    self.__build_connections()
+                    continue
+
+                else:
+                    contig = self.__assemble_sequence(path)
+
+                    for kmer in kmers_in_path:
+                        self.__kmers_dict.pop(kmer, None)
+
+                    f.write(f">contig_{contig_count}_of_length_{len(contig)}\n")
+                    for i in range(0, len(contig), 60):
+                        f.write(contig[i:i+60] + '\n')
+                    contig_count += 1
+
+        print(f"Contigs written to {output_file}")
+
+    def is_tip (self, path, threshold = 1):
+
+        if self.get_successors(path[-1]) == 0:
+            if len(path) < threshold:
+                return True
+        return False
+
     def get_all_contigs(self, output_file: str = "output.fasta", tip_threshold=1) -> None:
         """
         Version corrigée avec :
@@ -143,54 +178,42 @@ class Graph:
         - Évite les doublons dans les contigs
         """
         contig_count = 1
-        written_contigs = set()  # Pour éviter les doublons
-    
+
         with open(output_file, 'w') as f:
             while self.__kmers_dict:
-                kmer = next(iter(self.__kmers_dict))
-            
+                kmer = next(iter(self.__kmers_dict)) #Prend le prochain Kmers
+
                 path, kmers_in_path = self.__simple_path(kmer)
-                cleaned_path, kmers_to_remove = self.tip_removal(path, kmers_in_path, tip_threshold)
-            
-                # Suppression cohérente des k-mers
-                for kmer in kmers_in_path.union(kmers_to_remove):
-                    self.__kmers_dict.pop(kmer, None)
-            
-                if not cleaned_path:
+
+                if self.is_tip(path, tip_threshold):
+                    for kmer in kmers_in_path:
+                        self.__kmers_dict.pop(kmer, None)
+                    self.__build_connections()
                     continue
-                
-                contig = self.__assemble_sequence(cleaned_path)
-            
-            # Éviter d'écrire des contigs identiques
-                if contig not in written_contigs:
+
+                else:
+                    contig = self.__assemble_sequence(path)
+
+                    for kmer in kmers_in_path:
+                        self.__kmers_dict.pop(kmer, None)
+
                     f.write(f">contig_{contig_count}_of_length_{len(contig)}\n")
                     for i in range(0, len(contig), 60):
                         f.write(contig[i:i+60] + '\n')
                     contig_count += 1
-                    written_contigs.add(contig)
 
         print(f"Contigs written to {output_file}")
+
+    def is_tip (self, path, threshold = 1):
+
+        if self.get_successors(path[-1]) == 0:
+            if len(path) < threshold:
+                return True
+        return False
     
-    def tip_removal(self, path, kmers_in_path, threshold=1):
-        """
-        >>> graph = Graph({'ATG':1, 'TGG':1, 'GGA':1})
-        >>> path, kmers_in_path = graph._Graph__simple_path('TGG')
-        >>> graph.tip_removal(path, kmers_in_path)
-        (['AT', 'TG', 'GG', 'GA'], set())
-        >>> graph.tip_removal(path, kmers_in_path, 4)
-        ([], { 'ATG', 'TGG', 'GGA'})
-        >>> graph.tip_removal([], {})
-        ([], set())
-        """
-        #chemin vide
-        if not path :
-            return path, set()
-    
-        #si court et dernier sans successeur = dead-end = tip
-        if not self.get_successors(path[-1])and len(path) <= threshold:
-            return [], kmers_in_path
-        
-        return path, set()
+    def is_bubble(self,path,max_length):
+        #Cas 1 : 
+        pass
     
     def bubble_removing (self, current_node, max_path_length = 10):
         pass
