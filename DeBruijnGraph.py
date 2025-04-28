@@ -166,7 +166,7 @@ class Graph:
 
     def is_tip (self, path, threshold = 1):
 
-        if self.get_successors(path[-1]) == 0:
+        if  len(self.get_successors(path[-1])) == 0:
             if len(path) < threshold:
                 return True
         return False
@@ -190,7 +190,11 @@ class Graph:
                         self.__kmers_dict.pop(kmer, None)
                     self.__build_connections()
                     continue
-
+                
+                if self.is_bubble(path):
+                    pass 
+                    #Gestion des bulles à définir
+                    
                 else:
                     contig = self.__assemble_sequence(path)
 
@@ -211,10 +215,44 @@ class Graph:
                 return True
         return False
     
-    def is_bubble(self,path,max_length):
-        #Cas 1 : 
-        pass
-    
+    def is_bubble(self, path, max_length):
+        #on récupère le dernier noeud du chemin:
+        last_node = path[-1]
+
+        #on regarde s'il a plus d'un successeur
+        successors = self.get_successors(last_node)
+
+        #si moins de 2 successeurs pas une bulle
+        if len(successors) <2 :
+            return False
+        
+        #Stocker les points de convergence
+        #Clé = noeud de convergence, Valeur = liste des chemins y menant
+        convergence_points = defaultdict(list)
+
+        #on fait le chemin des x chemins  = nombre de successeur
+        for succ in successors:
+            current_path = [last_node, succ]
+            current_node = succ
+
+            while len(current_path) <= max_length:
+                next_nodes = self.get_successors(current_node)
+                
+                #vérifie si on a toujours qu'un chemin simple
+                if len(next_nodes) != 1:
+                    break
+                
+                current = next_nodes[0]
+                current_path.append(current)
+
+                #vérifie si ce noeud est un point de convergence
+                if len(self.get_predecessors(current)) > 1 and self.get_successors(current) == 1:
+                    convergence_points[current].append(path)
+                    break
+
+        #bulle existe si au moins 2 chemins convergent vers un même noeud
+        return any(len(paths) >= 2 for paths in convergence_points.values())
+        
     def bubble_removing (self, current_node, max_path_length = 10):
         pass
 
