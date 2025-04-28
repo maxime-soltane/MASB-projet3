@@ -90,9 +90,17 @@ class Graph:
         current = start  
         while True:
             preds = self.get_predecessors(current)
-            if len(preds) != 1 or len(self.get_successors(preds[0])) != 1:
+            if len(preds) == 0:  #or len(self.get_successors(preds[0])) == 0:
                 break
-                #possiblement un bulle ici donc ajouter bubble_removing ici
+                #On a fini l'extension à gauche 
+
+            if len(preds)>1 :
+                pass
+                #on a possiblement une bulle
+
+            if len(self.get_successors(preds[0])) >1:
+                pass
+                #on a possiblement une bulle
 
             kmer_to_remove = preds[0] + current[-1]
             kmers_in_path.add(kmer_to_remove)
@@ -136,38 +144,36 @@ class Graph:
         
         return path[0] + "".join(node[-1] for node in path[1:])
     
-    def get_all_contigs(self, output_file: str = "output.fasta", tip_threshold=1) -> None:
+    def get_all_contigs(self, output_file: str = "output.fasta") -> None:
         """
-        Version corrigée avec :
-        - Gestion correcte des k-mers supprimés
-        - Évite les doublons dans les contigs
+        Assemble all contigs and write them to a Fasta file.
+
+        Parameter:
+        output_file: output Fasta filename
         """
         contig_count = 1
-        written_contigs = set()  # Pour éviter les doublons
-    
         with open(output_file, 'w') as f:
             while self.__kmers_dict:
-                kmer = next(iter(self.__kmers_dict))
-            
-                path, kmers_in_path = self.__simple_path(kmer)
-                cleaned_path, kmers_to_remove = self.tip_removal(path, kmers_in_path, tip_threshold)
-            
-                # Suppression cohérente des k-mers
-                for kmer in kmers_in_path.union(kmers_to_remove):
-                    self.__kmers_dict.pop(kmer, None)
-            
-                if not cleaned_path:
-                    continue
                 
+                kmer = next(iter(self.__kmers_dict))
+
+                path, kmers_in_path = self.__simple_path(kmer)
+                
+                cleaned_path, kmers_to_remove = self.tip_removal(path, kmers_in_path)
+
+                if not cleaned_path:
+                    for kmer in kmers_to_remove: 
+                        self.__kmers_dict.pop(kmer, None)
+
                 contig = self.__assemble_sequence(cleaned_path)
-            
-            # Éviter d'écrire des contigs identiques
-                if contig not in written_contigs:
-                    f.write(f">contig_{contig_count}_of_length_{len(contig)}\n")
-                    for i in range(0, len(contig), 60):
-                        f.write(contig[i:i+60] + '\n')
-                    contig_count += 1
-                    written_contigs.add(contig)
+
+                for kmer in kmers_in_path:
+                    self.__kmers_dict.pop(kmer, None)
+                
+                f.write(f">contig_{contig_count}_of_length_{len(contig)}\n")
+                for i in range(0, len(contig), 60):
+                    f.write(contig[i:i+60] + '\n')
+                contig_count += 1
 
         print(f"Contigs written to {output_file}")
     
@@ -193,8 +199,23 @@ class Graph:
         return path, set()
     
     def bubble_removing (self, current_node, max_path_length = 10):
-        pass
+        preds = self.get_predecessors(current_node) #on en a plus qu'un
+
+        for i in range(len(preds)):
+            bulle = True
+            while bulle:
+                preds = self.get_predecessors(preds[i]) #on va explorer le chemin du i eme noeud
+
+                #on cherche à trouver le premier noeud de la bulle qui possède autant de successeur que de chemin dans la bulle
+                if self.get_successors(preds[0]) == len(preds): 
+                    #on récupère le chemin que l'on vient de parcourir 
+                    #on récupère les autres en parcourant le chemin dans l'autre sens
+                    pass
+
+                #if len(path) > max_path_length:
+                    #possible chemin alternatif et pas une bulle
+                    #pass
 
 
-    def complex_pattern_removing (self):
-        pass
+                
+            
