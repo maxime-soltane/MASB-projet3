@@ -169,6 +169,16 @@ class Graph:
         print(f"Contigs written to {output_file}")
     
     def tip_removal(self, path, kmers_in_path, threshold=1):
+        """
+        >>> graph = Graph({'ATG':1, 'TGG':1, 'GGA':1})
+        >>> path, kmers_in_path = graph._Graph__simple_path('TGG')
+        >>> graph.tip_removal(path, kmers_in_path)
+        (['AT', 'TG', 'GG', 'GA'], set())
+        >>> graph.tip_removal(path, kmers_in_path, 4)
+        ([], { 'ATG', 'TGG', 'GGA'})
+        >>> graph.tip_removal([], {})
+        ([], set())
+        """
         #chemin vide
         if not path :
             return path, set()
