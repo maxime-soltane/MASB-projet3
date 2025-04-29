@@ -1,6 +1,6 @@
 import gzip
 from Bio import SeqIO   
-from DeBruijnGraph import * 
+from test2 import * 
 from collections import defaultdict
 from time import time
 from typing import Dict
@@ -90,7 +90,7 @@ if __name__ == '__main__':
             kmers_dict[kmer] += count
 
     dbg = Graph(kmers_dict)
-    dbg.test("level0_contig.fa")
+    dbg.get_all_contigs("level0_contig.fa")
     end = time()
     print(f"Temps d'execution sur Level0 = {end-start}\n")
 
@@ -106,7 +106,7 @@ if __name__ == '__main__':
     f2_kmers = kmers_filter(kmers_dict2, 4)
 
     dbg2 = Graph(f2_kmers)
-    dbg2.test("level1_contig_tr_31_4.fa", 5)
+    dbg2.get_all_contigs("level1_contig_tr_31_4.fa")
     end1 = time()
     print(f"Temps d'execution sur Level1 = {end1-start1}\n")
 
@@ -121,6 +121,6 @@ if __name__ == '__main__':
 
     f3_kmers = kmers_filter(kmers_dict3, 3)
     dbg3 = Graph(f3_kmers)
-    dbg3.test("level2_contig_tr_51_3.fa")
+    dbg3.get_all_contigs("level2_contig_tr_51_3.fa")
     end2 = time()
     print(f"Temps d'execution sur Level1 = {end2-start2}\n")
