@@ -146,12 +146,46 @@ class DeBruijnGraph:
 
         return tips
 
-    def remove_tips(self, threshold):
+    def remove_tips(self, threshold: int = 2):
+        """
+        Remove tips from the graph
+
+        Parameter:
+        threshold: Maximum allowed tip length
+
+        Examples:
+
+        # Cas de base : une branche principale avec un court tip
+        #>>> g = DeBruijnGraph({'ATG':1, 'TGG':1, 'GGA':1, 'TGT':1})
+        #>>> g.remove_tips(2)
+        #>>> dict(g.get_graph())
+        #{'AT': ['TG'], 'TG': ['GG'], 'GG': ['GA']}
+
+        # Cas limite : faux positif (le tip a un successeur)
+        #>>> g = DeBruijnGraph({'ATG':1, 'TGG':1, 'GGA':1, 'TGT':1, 'GTT':1})
+        #>>> g.remove_tips(2)
+        #>>> dict(g.get_graph())
+        #{'AT': ['TG'], 'TG': ['GG', 'GT'], 'GG': ['GA'], 'GT': ['TT']}
+
+        # Cas complexe : deux tips symétriques
+        #>>> g = DeBruijnGraph({'ATG':1, 'TGG':1, 'GGG':1, 'TGA':1, 'GAC':1})
+        #>>> g.remove_tips(2)
+        #>>> sorted(dict(g.get_graph()).items())
+        #[('AT', ['TG']), ('GG', ['GG']), ('TG', ['GG'])]
+        """
         tips = self.find_all_tips(threshold)
     
-        for _, used_kmers in tips:
-            for kmer in used_kmers:
-                self.kmers_dict.pop(kmer, None)
+        for tip in tips:
+            path = self.__simple_path(tip)
+
+            # On vérifie que le chemin se termine, sans successeur
+            if len(path) <= threshold and len(self.get_successors(path[-1])) == 0:
+
+                # Supprimer tous les k-mers correspondant à ce chemin
+                for i in range(len(path)-1):
+                    kmer = path[i] + path[i+1][-1]
+                    if kmer in self.kmers_dict:
+                        del self.kmer_dict[kmer]
 
         self.reconstruct_graph()
 
@@ -193,17 +227,55 @@ class DeBruijnGraph:
 
         return bubbles
 
-    def remove_bubbles(self, threshold=50):
-        bubbles = self.find_all_bubbles(threshold)
+    def remove_bubbles(self, threshold: int =50):
+        """
+        Remove bubbles from the graph
+
+        Parameter:
+        threshold: Maximum path length to consider when detecting bubbles
+
+        Examples:
+
+        # Cas de base : deux chemins partant d'un même point et se rejoignant
+        >>> g = DeBruijnGraph({'ATG':1, 'TGG':1, 'TGA':1, 'GGT':1, 'GAT':1})
+        >>> g.remove_bubbles()
+        >>> sorted(dict(g.get_graph()).items())
+        [('AT', ['TG']), ('GG', ['GT']), ('TG', ['GG'])]
+
+        # Cas limite : les deux chemins font la même longueur
+        >>> g = DeBruijnGraph({'ATG':1, 'TGA':1, 'TGC':1, 'GAA':1, 'GCA':1})
+        >>> g.remove_bubbles()
+        >>> sorted(dict(g.get_graph()).items())
+        [('AT', ['TG']), ('TG', ['GC']), ('GC', ['A'])]
+
+        # Cas limite : les chemins divergents ne convergent pas
+        >>> g = DeBruijnGraph({'ATG':1, 'TGA':1, 'TGC':1})
+        >>> g.remove_bubbles()
+        >>> sorted(dict(g.get_graph()).items())
+        [('AT', ['TG']), ('TG', ['GA', 'GC'])]
+
+        # Cas complexe : deux bulles se rejoignent en un point non commun
+        >>> g = DeBruijnGraph({'ATG':1, 'TGA':1, 'TGC':1, 'GAC':1, 'GCT':1})
+        >>> g.remove_bubbles()
+        >>> sorted(dict(g.get_graph()).items())
+        [('AT', ['TG']), ('GA', ['C']), ('GC', ['T']), ('TG', ['GA', 'GC'])]
+        """
+        # Liste de tuples(noeuds, chemins)
+        bubbles = self.find_all_bubbles(threshold) 
 
         for node, paths in bubbles:
-            sorted_path = sorted(paths, key= len, reverse=True)
-            paths_to_remove = sorted_path[1:]
+            if len(paths) <2:
 
-            for path in paths_to_remove:
-                for i in range(len(path) - 1):
-                    kmer = path[i] + path[i + 1][-1]
-                    self.kmers_dict.pop(kmer, None)
+                # Pas de bulle si un seul chemin
+                continue
+
+            # Tous les autres sont supprimés
+            for path in paths[1:]:
+                if len(path) <= threshold:
+                    for i in range(len(path)-1):
+                        kmer = path[i] + path[i + 1][-1]
+                        if kmer in self.kmers_dict:
+                            del self.kmers_dict[kmer]
 
         self.reconstruct_graph()
 
