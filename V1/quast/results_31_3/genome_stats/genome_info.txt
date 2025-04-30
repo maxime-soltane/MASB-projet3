@@ -1,0 +1,14 @@
+reference chromosomes:
+	NC_045512.2 (total length: 29903 bp, total length without N's: 29903 bp, maximal covered length: 29253 bp)
+
+total genome size: 29903
+
+gap min size: 50
+partial gene/operon min size: 100
+
+
+
+assembly                 | genome    | duplication | gaps      | genes     | partial   | operons   | partial   |
+                         | fraction  | ratio       | number    |           | genes     |           | operons   |
+========================================================================================================================
+level1_contig-fa_31_3    | 97.826    | 1.000       | 2         | -         | -         | -         | -         |
