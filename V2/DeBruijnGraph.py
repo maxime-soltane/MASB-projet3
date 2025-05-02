@@ -31,24 +31,67 @@ class DeBruijnGraph:
 
     ## Méthode get
     def get_successors(self, node: str) -> List[str]:
-        """Retourne la liste des successeurs du nœud donné."""
+        """Retourne la liste des successeurs du nœud donné.
+        
+        >>> g = DeBruijnGraph({'ATG':1, 'TGG':1, 'GGA':1, 'TGT':1})
+        >>> g.get_successors("AT")
+        ['TG']
+        >>> g.get_successors("TG")
+        ['GG', 'GT']
+        """
         return self.__graph.get(node, [])
 
     def get_predecessors(self, node: str) -> List[str]:
-        """Retourne la liste des prédécesseurs du nœud donné."""
+        """Retourne la liste des prédécesseurs du nœud donné.
+        
+        >>> g = DeBruijnGraph({'ATG':1, 'TGG':1, 'GGA':1, 'TGT':1})
+        >>> g.get_predecessors("GG")
+        ['TG']
+        >>> g.get_predecessors("AT")
+        []
+        """
         return self.__reverse_graph.get(node, [])
     
     def get_graph(self):
-        return self.__graph
+        """
+        >>> g = DeBruijnGraph({'ATG':1, 'TGG':1, 'GGA':1, 'TGT':1})
+        >>> g.get_graph()
+        {'AT': ['TG'], 'TG': ['GG', 'GT'], 'GG': ['GA']}
+        """
+        return dict(self.__graph)
     
     def get_reverse_graph(self):
-        return self.__reverse_graph
+        return dict(self.__reverse_graph)
     
     ## Construction de contigs
     def __simple_path(self, start_node: str) -> Tuple[List[str], Set[str]]:
         """
         Construit un chemin simple à partir d'un nœud de départ et retourne les k-mers utilisés.
+
+        #Cas de base 
+        >>> g = DeBruijnGraph({'ATG':1, 'TGG':1, 'GGC':1})
+        >>> g.get_graph()
+        {'AT': ['TG'], 'TG': ['GG'], 'GG': ['GC']}
+        >>> g._DeBruijnGraph__simple_path('AT')[0]
+        ['AT', 'TG', 'GG', 'GC']
+
+        #Cas 2 : Gestion d'un cycle
+        >>> g = DeBruijnGraph({'ATG':1, 'TGG':1, 'GGA':1, 'GAT':1})
+        >>> g.get_graph()
+        {'AT': ['TG'], 'TG': ['GG'], 'GG': ['GA'], 'GA': ['AT']}
+        >>> g._DeBruijnGraph__simple_path('AT')[0]
+        ['AT', 'TG', 'GG', 'GA']
+
+        #Cas 3 : Start_node absente dans le graphe
+        >>> g = DeBruijnGraph({'ATG':1, 'TGG':1, 'GGA':1, 'GAT':1})
+        >>> g.get_graph()
+        {'AT': ['TG'], 'TG': ['GG'], 'GG': ['GA'], 'GA': ['AT']}
+        >>> g._DeBruijnGraph__simple_path('TT')
+        ([], set())
         """
+        if not start_node in self.get_graph():
+            return [], set()
+        
         path = [start_node]
         used_kmers = set()
 
@@ -59,6 +102,8 @@ class DeBruijnGraph:
             if len(successors) != 1:
                 break
             next_node = successors[0]
+            if next_node in path:
+                break
             kmer = current + next_node[-1]
             if kmer not in self.kmers_dict:
                 break
@@ -73,6 +118,8 @@ class DeBruijnGraph:
             if len(predecessors) != 1:
                 break
             prev_node = predecessors[0]
+            if prev_node in path:
+                break 
             kmer = prev_node + current[-1]
             if kmer not in self.kmers_dict:
                 break
@@ -83,7 +130,18 @@ class DeBruijnGraph:
         return path, used_kmers
     
     def __assemble_sequence(self, path: List[str]) -> str:
-        """Assemble une séquence à partir d'un chemin de nœuds."""
+        """Assemble une séquence à partir d'un chemin de nœuds.
+        
+        #Cas de base
+        >>> g = DeBruijnGraph({'ATG':1, 'TGG':1, 'GGC':1})        
+        >>> g._DeBruijnGraph__assemble_sequence(['AT', 'TG', 'GG', 'GC'])
+        'ATGGC'
+
+        #Cas 2 : chemin vide
+        >>> g = DeBruijnGraph({})        
+        >>> g._DeBruijnGraph__assemble_sequence([])
+        ''
+        """
         if not path:
             return ""
         return path[0] + ''.join(node[-1] for node in path[1:])
@@ -122,31 +180,74 @@ class DeBruijnGraph:
     
     ## Option d'assemblage
     # Gestion des tips
-    def is_tip(self, path, threshold):
-        if not path:
+    def is_tip(self, path, threshold=5):
+        """
+        >>> g = DeBruijnGraph({'ATG':1, 'TGG':1, 'GGC':1})
+        >>> p = g._DeBruijnGraph__simple_path('AT')[0]
+        >>> print(p)
+        ['AT', 'TG', 'GG', 'GC']
+        >>> g.is_tip(p)
+        True
+        >>> g.is_tip(["AT", "TG", "GG", "GC"], 2)
+        False
+        """
+        if not path or len(path) >= threshold:
             return False
-
-        return len(self.get_successors(path[-1])) == 0 and len(path) < threshold
+        
+        return len(self.get_successors(path[-1])) == 0
     
-    def find_all_tips(self, threshold =10) -> List[List[str]]:
-        tips = []
+    def find_all_tips(self, threshold =5):
+        """
 
+        #Cas 1 : 1 seul tip
+        >>> g = DeBruijnGraph({'ATG':1, 'TGG':1, 'GGC':1})
+        >>> p = g._DeBruijnGraph__simple_path('AT')[0]
+        >>> g.find_all_tips()[0][0] 
+        ['AT', 'TG', 'GG', 'GC']
+
+        #Cas 2 : 2 tips
+        >>> g = DeBruijnGraph({'ATG':1, 'TGG':1, 'GGC':1, 'CAA':1, 'AAT':1, 'GTT':1, 'TTG':1})
+        >>> print(g.get_graph())
+        {'AT': ['TG'], 'TG': ['GG'], 'GG': ['GC'], 'CA': ['AA'], 'AA': ['AT'], 'GT': ['TT'], 'TT': ['TG']}
+        >>> tips = g.find_all_tips(10)
+        >>> len(tips)
+        2
+
+        >>> # Cas 3: Aucun tip (tous les chemins ont des successeurs)
+        >>> g = DeBruijnGraph({'ATG':1, 'TGT':1, 'GTG':1, 'TGG':1, 'GGT':1, 'GTG':1})
+        >>> g.get_graph()
+        {'AT': ['TG'], 'TG': ['GT', 'GG'], 'GT': ['TG'], 'GG': ['GT']}
+        >>> len(g.find_all_tips())
+        0
+
+        >>> # Cas 4: Tip plus long que le seuil (ne doit pas être détecté)
+        >>> g = DeBruijnGraph({'ATG':1, 'TGG':1, 'GGC':1, 'GCC':1, 'CCA':1})
+        >>> path, _ = g._DeBruijnGraph__simple_path('AT')
+        >>> print(path)
+        ['AT', 'TG', 'GG', 'GC', 'CC', 'CA']
+        >>> len(g.find_all_tips(threshold=3))  
+        0
+        """
+        tips = []
         visited = set()
 
-        for node in self.__graph:
+        for node in sorted(self.__graph.keys()):
             if node in visited:
                 continue
 
             path, used_kmers = self.__simple_path(node)
 
-            visited.update(path)
-
             if self.is_tip(path, threshold):
                 tips.append((path, used_kmers))
+                visited.update(path)
+            elif len(path) > 1:
+                visited.update(path[:-1])
+            else:
+                visited.add(node)
 
         return tips
-
-    def remove_tips(self, threshold: int = 2):
+        
+    def remove_tips(self, threshold: int = 5):
         """
         Remove tips from the graph
 
@@ -156,10 +257,12 @@ class DeBruijnGraph:
         Examples:
 
         # Cas de base : une branche principale avec un court tip
-        #>>> g = DeBruijnGraph({'ATG':1, 'TGG':1, 'GGA':1, 'TGT':1})
-        #>>> g.remove_tips(2)
-        #>>> dict(g.get_graph())
-        #{'AT': ['TG'], 'TG': ['GG'], 'GG': ['GA']}
+        >>> g = DeBruijnGraph({'ATG':1, 'TGG':1, 'GGA':1, 'TGT':1})
+        >>> g.get_graph()
+        {'AT': ['TG'], 'TG': ['GG', 'GT'], 'GG': ['GA']}
+        >>> g.remove_tips(2)
+        >>> g.get_graph()
+        {'AT': ['TG'], 'TG': ['GG'], 'GG': ['GA']}
 
         # Cas limite : faux positif (le tip a un successeur)
         #>>> g = DeBruijnGraph({'ATG':1, 'TGG':1, 'GGA':1, 'TGT':1, 'GTT':1})
@@ -175,8 +278,8 @@ class DeBruijnGraph:
         """
         tips = self.find_all_tips(threshold)
     
-        for tip in tips:
-            path = self.__simple_path(tip)
+        for path, used_kmers in tips:
+            path = self.__simple_path(path)
 
             # On vérifie que le chemin se termine, sans successeur
             if len(path) <= threshold and len(self.get_successors(path[-1])) == 0:
@@ -185,11 +288,77 @@ class DeBruijnGraph:
                 for i in range(len(path)-1):
                     kmer = path[i] + path[i+1][-1]
                     if kmer in self.kmers_dict:
-                        del self.kmer_dict[kmer]
+                        del self.kmers_dict[kmer]
 
         self.reconstruct_graph()
 
     # Gestion des bulles
+    def find_all_bubbles(self, max_length= 50):
+        bubbles = []
+        visited = set()
+
+        for node in self.__graph:
+            if node in visited:
+                continue
+
+            successors = self.get_successors(node)
+            if len(successors) < 2:
+                continue  # Pas de bulle possible
+
+            convergence_points = defaultdict(list)
+
+            for succ in successors:
+                path = [node, succ]
+                current = succ
+
+                while len(path) <= max_length:
+                    next_nodes = self.get_successors(current)
+                    if len(next_nodes) != 1:
+                        break
+
+                    current = next_nodes[0]
+                    path.append(current)
+
+                    if len(self.get_predecessors(current)) > 1 and self.get_successors(current) == 1:
+                        convergence_points[current].append(path.copy())
+                        break
+
+            for conv_node, paths in convergence_points.items():
+                if len(paths) >= 2:
+                    bubbles.append((node, paths))
+                    visited.update(p for path in paths for p in path)
+
+        return bubbles
+
+    def remove_bubbles(self, threshold: int =50):
+        """
+        Remove bubbles from the graph
+
+        Parameter:
+        threshold: Maximum path length to consider when detecting bubbles
+
+        Examples:
+        """
+        # Liste de tuples(noeuds, chemins)
+        bubbles = self.find_all_bubbles(threshold) 
+
+        for node, paths in bubbles:
+            if len(paths) <2:
+
+                # Pas de bulle si un seul chemin
+                continue
+
+            # Tous les autres sont supprimés
+            for path in paths[1:]:
+                if len(path) <= threshold:
+                    for i in range(len(path)-1):
+                        kmer = path[i] + path[i + 1][-1]
+                        if kmer in self.kmers_dict:
+                            del self.kmers_dict[kmer]
+
+        self.reconstruct_graph()
+
+# Gestion des bulles
     def find_all_bubbles(self, max_length= 50):
         bubbles = []
         visited = set()
@@ -278,4 +447,15 @@ class DeBruijnGraph:
                             del self.kmers_dict[kmer]
 
         self.reconstruct_graph()
+        
+if __name__ == '__main__':
+    g = DeBruijnGraph({'ATG':1, 'TGG':1, 'GGC':1, 
+                       'CAA':1, 'AAT':1, 'GTT':1, 
+                       'TTG':1, 'TGA':1})
+    print(g.get_graph())
+    print(g._DeBruijnGraph__simple_path('AT'))
+    print(g._DeBruijnGraph__simple_path('GT'))
+    print(g._DeBruijnGraph__simple_path('CA'))
+
+    
 
