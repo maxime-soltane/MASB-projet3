@@ -293,9 +293,9 @@ class DBG:
                         tips.append(full_path)
                         visited.update(path)
 
+        print("tips trouvés")
         return tips
 
-    
     def remove_tips(self, threshold=5):
         """
         Remove tips from the graph based on a length threshold.
@@ -329,10 +329,66 @@ class DBG:
                 self.__kmers_dict.pop(kmer, None)
         
         self.__build_graph()
+        print("tips éliminés")
 
+# Bubbles management
 
+    def remove_bubbles(self) -> List[Tuple[str, List[List[str]]]]:
+        """
+        Detects all bubbles in the graph and remove paths to let 1 path reamining.
 
-    # Assemblage de séquence
+        Returns:
+        A list of tuples containing a starting node and a list of alternative paths that converge later
+
+        >>> kmers_bulle = {'ATG':1, 'TGC':1, 'GCA':1, 'CAA':1, 'GCT':1, 'CTA':1, 'TAA':1}
+        >>> g = DBG(kmers_bulle)
+        >>> g.get_graph()
+        {'AT': ['TG'], 'TG': ['GC'], 'GC': ['CA', 'CT'], 'CA': ['AA'], 'CT': ['TA'], 'TA': ['AA']}
+        >>> g.remove_bubbles()
+        >>> g.get_graph()
+        {'AT': ['TG'], 'TG': ['GC'], 'GC': ['CA'], 'CA': ['AA']}
+        """
+        k = len(next(iter(self.__kmers_dict))) 
+        
+        #pour chaque noeud
+        for node in self.__graph:
+            #on collecte ses successeurs
+            successors = self.get_successors(node)
+            #si plus d'un successeur
+            if len(successors) >= 2:
+                #point de convergence possible = 
+                convergence_point = []
+                #pour chaque successeur dans successeur
+                for su in successors:
+                    #on construit le chemin du successseur actuel
+                    path = self.__simple_path(su)
+                    #on prend le dernier noeud du chemin
+                    last_node = path[-1]
+                    #on récupère ses successeurs
+                    s = self.get_successors(last_node)
+                    #s'il en a qu'un = point de convergence
+                    if len(s) == 1:
+                        #si le successeur n'est pas ajouté dans point de convergence possible
+                        if s[0] not in convergence_point:
+                            #on l'ajoute
+                            convergence_point.append(s[0])
+                        #si dans convergence point = point de convergence de la bulle
+                        elif s[0] in convergence_point:
+                            #on ajoute au chemin le noeud de départ de la bulle
+                            path.insert(0, node)
+                            #on ajoute le point de convergence
+                            path.append(s[0])
+                            #on assemble la séquence présente dans le chemin
+                            sequence = self.__assemble_sequence(path)
+                            #on reconstruit les kmers et les enlève du dico
+                            for i in range(len(sequence) - k + 1):
+                                kmer = sequence[i:i+k]
+                                self.__kmers_dict.pop(kmer, None)
+
+        self.__build_graph()
+        print("bulles éliminées")
+
+# Assemblage de séquence
 
     def __assemble_sequence(self, path: List[str]) -> str:
         """
@@ -359,7 +415,7 @@ class DBG:
             return ""
         return path[0] + ''.join(node[-1] for node in path[1:])
 
-    def get_all_contigs(self, output_file: str = "output_file.fa", tip_threshold = 3, bubble_threshold = 50) -> None:
+    def get_all_contigs(self, output_file: str = "output_file.fa", tip_threshold = 3) -> None:
         """
         Extracts all the contigs from the graph, writes them in a fasta file and deletes the used kmers.
 
@@ -369,24 +425,27 @@ class DBG:
         bubble_threshold: The threshold for bubble removal   
         """
         self.remove_tips(tip_threshold)
-        self.remove_bubbles(bubble_threshold)
+        self.remove_bubbles()
 
         contig_num = 1
-        
+        k = len(next(iter(self.__kmers_dict))) 
+
         with open(output_file, 'w') as out:
-            for start_kmer in list(self.kmers_dict.keys()):
-                if start_kmer not in self.kmers_dict:
+            for start_kmer in list(self.__kmers_dict.keys()):
+                if start_kmer not in self.__kmers_dict:
                     # Kmers already processed
                     continue  
 
                 start_node = start_kmer[:-1]
-                path, used_kmers = self.__simple_path(start_node)
+                path = self.__simple_path(start_node)
 
                 if not path:
                     continue
 
-                for k in used_kmers:
-                    self.kmers_dict.pop(k, None)
+                sequence = self.__assemble_sequence(path)
+                for i in range(len(sequence) - k + 1):
+                                kmer = sequence[i:i+k]
+                                self.__kmers_dict.pop(kmer, None)
 
                 contig = self.__assemble_sequence(path)
                 out.write(f">contig_{contig_num}_len_{len(contig)}\n")
@@ -395,10 +454,3 @@ class DBG:
 
         print(f"Contigs générés : {contig_num - 1}")
         print(f"{output_file} was generated\n")
-
-if __name__ == '__main__':
-    g = DBG({'ATG':1, 'TGG':1, 'GGA':1, 'TGT':1, 'GAC': 1, 'GTC': 1})
-    print(g.find_all_tips(3))
-    print(g.get_graph())
-    g.remove_tips(2)
-    print(g.get_graph())

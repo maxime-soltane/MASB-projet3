@@ -7,7 +7,7 @@ from time import time
 from Script import *
 
 #Import des méthodes pour créer le Graphe de DeBruijn
-from DeBruijnGraph import *
+from DBG_V3 import *
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -30,8 +30,6 @@ if __name__ == '__main__':
                         help = "Si présent assemble")
     parser.add_argument("-tt", "--tip_threshold", required=False, type=int,
                         help = "Max length of an alternative path to be considered as a tip")
-    parser.add_argument("-bt", "--bubble_threshold", required=False, type=int,
-                        help = "Max length of an alternative path to be considered as a bubble")
 
     args = parser.parse_args()
 
@@ -54,29 +52,19 @@ if __name__ == '__main__':
     print("Kmers dictionnary generated")
 
     if args.assembler:
-        dbg = DeBruijnGraph(kmers_dict)
+        dbg = DBG(kmers_dict)
         print("DeBruijn graph generated")
         
         #Gestion des arguments optionnels
-        #3 arguments présents
-        if args.outfile and args.tip_threshold and args.bubble_threshold:
-            dbg.get_all_contigs(args.outfile, args.tip_threshold, args.bubble_threshold)
-
         #2 arguments présents
-        elif args.outfile and args.tip_threshold:
-                dbg.get_all_contigs(args.outfile, args.tip_threshold)
-        elif args.outfile and args.bubble_threshold:
-                dbg.get_all_contigs(args.outfile, args.bubble_threshold)
-        elif args.tip_threshold and args.bubble_threshold: 
-            dbg.get_all_contigs(args.tip_threshold, args.bubble_threshold)
-        
+        if args.outfile and args.tip_threshold:
+            dbg.get_all_contigs(args.outfile, args.tip_threshold)
+
         #1 argument présent
         elif args.outfile: 
             dbg.get_all_contigs(args.outfile)
         elif args.tip_threshold:
             dbg.get_all_contigs( args.tip_threshold)
-        elif args.bubble_threshold: 
-            dbg.get_all_contigs(args.bubble_threshold)
         
         #0 argument présent
         else:
