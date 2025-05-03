@@ -7,17 +7,20 @@ class DBG:
     def __init__(self, kmers_dict):
         self.__kmers_dict = kmers_dict
         self.__graph = defaultdict(list)
+        self.__reverse_graph = defaultdict(list)
         self.__build_graph()
     
     def __build_graph(self):
         self.__graph = defaultdict(list)  # Réinitialise le graphe
-    
+        self.__reverse_graph = defaultdict(list)
+
         for kmer in self.__kmers_dict:
             if len(kmer) < 2:
                 continue
             prefix = kmer[:-1]
             suffix = kmer[1:]
             self.__graph[prefix].append(suffix)
+            self.__reverse_graph[suffix].append(prefix)
 
     #Get method
 
@@ -57,11 +60,7 @@ class DBG:
         >>> g.get_predecessors("AT")
         []
         """
-        predecessors = []
-        for prefix, suffixes in self.__graph.items():
-            if node in suffixes:
-                predecessors.append(prefix)
-        return predecessors
+        return self.__reverse_graph.get(node, [])
 
     def get_graph(self):
         """
@@ -229,7 +228,8 @@ class DBG:
         if not path or len(path) >= threshold:
             return False
         
-        return len(self.get_successors(path[-1])) == 0
+        last_node = path[-1]
+        return not self.get_successors(last_node)
 
     def find_all_tips(self, threshold:int=5) -> List[Tuple[List[str], Set[str]]]:
         """
@@ -273,27 +273,40 @@ class DBG:
         tips = []
         visited = set()
 
+        potential_starts = set()
+        
         for node in self.__graph:
+
+            if not self.get_predecessors(node):
+                potential_starts.add(node)
+
+            if len(self.get_successors(node)) > 1:
+                potential_starts.add(node)
+        
+        for node in potential_starts:
             if node in visited:
                 continue
-
+                
             path = self.__simple_path(node)
             if self.is_tip(path, threshold):
                 tips.append(path)
                 visited.update(path)
-            
+        
+        for node in list(self.__graph.keys()):
             successors = self.get_successors(node)
-            if len(successors) > 1:
-                for succ in successors:
-                    if succ in visited:
-                        continue
-                    path = self.__simple_path(succ)
-                    if self.is_tip(path, threshold):
-                        full_path = [node] + path
-                        tips.append(full_path)
-                        visited.update(path)
-
-        print("tips trouvés")
+            if len(successors) <= 1:
+                continue
+                
+            for succ in successors:
+                if succ in visited:
+                    continue
+                    
+                path = self.__simple_path(succ)
+                if self.is_tip(path, threshold):
+                    full_path = [node] + path
+                    tips.append(full_path)
+                    visited.update(path)
+        
         return tips
 
     def remove_tips(self, threshold=5):
@@ -329,7 +342,6 @@ class DBG:
                 self.__kmers_dict.pop(kmer, None)
         
         self.__build_graph()
-        print("tips éliminés")
 
 # Bubbles management
 
@@ -386,7 +398,6 @@ class DBG:
                                 self.__kmers_dict.pop(kmer, None)
 
         self.__build_graph()
-        print("bulles éliminées")
 
 # Assemblage de séquence
 
