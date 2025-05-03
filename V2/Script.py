@@ -54,6 +54,27 @@ def kmers (sequence: str, k: int) -> Dict[str, int]:
         kmers[sequence[pos:pos+k]] += 1
     return kmers
 
+def check_kmers(kmer: str,dict_kmers: Dict[str, int]) -> bool:
+     """
+    >>> check_kmers("ATC", {'ATC': 1, 'TCG': 1, 'CGG': 1, 'GGC': 1, 'GCA': 1, 'CAT': 1})
+    True
+     """
+     return kmer in dict_kmers
+
+def add_kmers(kmer, dict_kmers):
+    """
+    >>> add_kmers("ATT", {'ATC': 1, 'TCG': 1, 'CGG': 1, 'GGC': 1, 'GCA': 1, 'CAT': 1})
+    {'ATC': 1, 'TCG': 1, 'CGG': 1, 'GGC': 1, 'GCA': 1, 'CAT': 1, 'ATT': 1}
+    >>> add_kmers("ATC", {'ATC': 1, 'TCG': 1, 'CGG': 1, 'GGC': 1, 'GCA': 1, 'CAT': 1})
+    {'ATC': 2, 'TCG': 1, 'CGG': 1, 'GGC': 1, 'GCA': 1, 'CAT': 1}
+    """
+    if kmer not in dict_kmers:
+        dict_kmers[kmer] = 1
+    else:
+        dict_kmers[kmer] += 1
+
+    return dict_kmers
+
 def kmers_filter (kmers_dict: Dict[str, int], threshold: int= 1) -> Dict[str, int]:
     """
     Filters kmers according to a minimum count threshold.
