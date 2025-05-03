@@ -79,18 +79,19 @@ class DBG:
     def get_kmers_dict(self):
         return self.__kmers_dict
     
-    # Construction de chemin
+    # Path construction
 
     def __extend_forward(self, start_node):
         """
-        Étend le chemin vers l'avant à partir de `start_node` tant que les nœuds ont un seul successeur.
+        Extend the path forward from start_node while nodes only have one successor.
         
-        Paramètre:
-        start_node: Nœud de départ.
+        Parameter:
+        start_node: The starting node
         
-        Retourne:
-        Liste des nœuds parcourus (y compris `start_node`).
+        Returns:
+        A list of traveled nodes (including start_node)
 
+        Examples:
         >>> g = DBG({'ATG':1, 'TGG':1, 'GGA':1, 'TGT':1})
         >>> g.get_graph()
         {'AT': ['TG'], 'TG': ['GG', 'GT'], 'GG': ['GA']}
@@ -113,13 +114,15 @@ class DBG:
         while True:
             successors = self.get_successors(current_node)
             if len(successors) != 1:
-                break  # Bifurcation ou fin du chemin
+                # Bifurcation or path end
+                break
 
             next_node = successors[0]
             predecessors_of_next = self.get_predecessors(next_node)
 
             if len(predecessors_of_next) != 1 or predecessors_of_next[0] != current_node:
-                break  # Successeur a plusieurs prédécesseurs ou lien non-unique
+                # Successor has multiple predecessors or non-unique link
+                break  
 
             path.append(next_node)
             current_node = next_node
@@ -128,14 +131,15 @@ class DBG:
 
     def __extend_backward(self, start_node):
         """
-        Étend le chemin vers l'arrière à partir de `start_node` tant que les nœuds ont un seul prédécesseur.
+        Extend the path backward from start_node while the nodes only have one predecessor.
         
-        Paramètre:
-        start_node: Nœud de départ.
-        
-        Retourne:
-        Liste des nœuds parcourus (sans `start_node`, pour éviter les duplications).
+        Parameter:
+        start_node: The starting node
 
+        Returns:
+        A list of traveled nodes (without start_node to prevent duplications)
+
+        Examples:
         >>> g = DBG({'ATG':1, 'TGG':1, 'GGA':1, 'TGT':1})
         >>> g.get_graph()
         {'AT': ['TG'], 'TG': ['GG', 'GT'], 'GG': ['GA']}
@@ -158,29 +162,34 @@ class DBG:
         while True:
             predecessors = self.get_predecessors(current_node)
             if len(predecessors) != 1:
-                break  # Bifurcation ou début du chemin
+                # Bifurcation or path start
+                break 
 
             pred = predecessors[0]
             successors_of_pred = self.get_successors(pred)
 
             if len(successors_of_pred) != 1 or successors_of_pred[0] != current_node:
-                break  # Prédécesseur a plusieurs successeurs ou lien non-unique
-
-            path.insert(0, pred)  # On ajoute au début pour garder l'ordre
+                # Predecessor has multiple successors or non-unique link
+                break 
+            
+            # Add to start to keep the order
+            path.insert(0, pred)  
             current_node = pred
 
         return path
 
     def __simple_path(self, start_node):
         """
-        Combine l'extension vers l'arrière et l'avant pour former un chemin linéaire maximal.
-        
-        Paramètre:
-        start_node: Nœud de départ.
-        
-        Retourne:
-        Chelin linéaire complet (arrière + avant).
 
+        Combines forward and backward extensions to create a maximum linear path.
+        
+        Parameter:
+        start_node: The starting node
+        
+        Returns:
+        The full linear path (forward and backward)
+
+        Examples:
         >>> g = DBG({'ATG':1, 'TGG':1, 'GGA':1, 'TGT':1})
         >>> g.get_graph()
         {'AT': ['TG'], 'TG': ['GG', 'GT'], 'GG': ['GA']}
@@ -197,12 +206,13 @@ class DBG:
         """
         backward_path = self.__extend_backward(start_node)
         forward_path = self.__extend_forward(start_node)
-        full_path = backward_path + forward_path  # Fusion sans duplication de `start_node`
+        # Merge without start_node duplication
+        full_path = backward_path + forward_path 
 
         return full_path
 
 
-    # Options d'assemblage
+    # Assembly options
 
     def is_tip(self, path: List[str], threshold: int=5) -> bool:
         """
@@ -335,7 +345,7 @@ class DBG:
         
         for tip in tips:  
                 
-            # Reconstruit la séquence et extrait les k-mers
+            # Rebuild the sequence and extract kmers
             sequence = tip[0] + ''.join(node[-1] for node in tip[1:])
             for i in range(len(sequence) - k + 1):
                 kmer = sequence[i:i+k]
@@ -352,6 +362,7 @@ class DBG:
         Returns:
         A list of tuples containing a starting node and a list of alternative paths that converge later
 
+        Examples:
         >>> kmers_bulle = {'ATG':1, 'TGC':1, 'GCA':1, 'CAA':1, 'GCT':1, 'CTA':1, 'TAA':1}
         >>> g = DBG(kmers_bulle)
         >>> g.get_graph()
@@ -362,44 +373,44 @@ class DBG:
         """
         k = len(next(iter(self.__kmers_dict))) 
         
-        #pour chaque noeud
+        # For every node
         for node in self.__graph:
-            #on collecte ses successeurs
+            # Collect its successors
             successors = self.get_successors(node)
-            #si plus d'un successeur
+            # If more than one successor
             if len(successors) >= 2:
-                #point de convergence possible = 
+                # Possible point of convergence
                 convergence_point = []
-                #pour chaque successeur dans successeur
+                # For every successors in successors
                 for su in successors:
-                    #on construit le chemin du successseur actuel
+                    # Build the path of the current successor
                     path = self.__simple_path(su)
-                    #on prend le dernier noeud du chemin
+                    # Pick the last node of the path
                     last_node = path[-1]
-                    #on récupère ses successeurs
+                    # Collect its successors
                     s = self.get_successors(last_node)
-                    #s'il en a qu'un = point de convergence
+                    # If there is only one : point of convergence
                     if len(s) == 1:
-                        #si le successeur n'est pas ajouté dans point de convergence possible
+                        # If the successor is not added in convergence_point
                         if s[0] not in convergence_point:
-                            #on l'ajoute
+                            # Add it
                             convergence_point.append(s[0])
-                        #si dans convergence point = point de convergence de la bulle
+                        # If in convergence_point : convergence point of the bubble
                         elif s[0] in convergence_point:
-                            #on ajoute au chemin le noeud de départ de la bulle
+                            # Add to the path the bubble starting node
                             path.insert(0, node)
-                            #on ajoute le point de convergence
+                            # Add the point of convergence
                             path.append(s[0])
-                            #on assemble la séquence présente dans le chemin
+                            # Assemble the sequence present in the path
                             sequence = self.__assemble_sequence(path)
-                            #on reconstruit les kmers et les enlève du dico
+                            # Rebuild kmers and take them out from the dictionary
                             for i in range(len(sequence) - k + 1):
                                 kmer = sequence[i:i+k]
                                 self.__kmers_dict.pop(kmer, None)
 
         self.__build_graph()
 
-# Assemblage de séquence
+# Sequence Assembly
 
     def __assemble_sequence(self, path: List[str]) -> str:
         """
