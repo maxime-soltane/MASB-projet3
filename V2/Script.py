@@ -7,9 +7,9 @@ from matplotlib import pyplot as plt
 
 def read_gz(filename: str):
         """
-        Open a Fasta or FastQ file, compressed (.gz) or not, in reading mode and return sequence's iterator.
+        Open a Fasta or FastQ file, compressed (.gz) or not, in reading mode and returns sequence's iterator.
 
-        Parameters:
+        Parameter:
         filename: the name of the file to work on
 
         Raises:
@@ -48,9 +48,9 @@ def kmers (sequence: str, k: int) -> Dict[str, int]:
     {}
     """
     kmers = defaultdict(int)
-    #parcours toutes les positions où des kmers sont possibles
+    # Browse every positions where kmers are possibles
     for pos in range(len(sequence)-k+1):
-        #les ajoute au dico avec leurs nombre d'occurrences
+        # Add them to the dictionary with their number of occurrences
         kmers[sequence[pos:pos+k]] += 1
     return kmers
 
@@ -63,7 +63,7 @@ def kmers_filter (kmers_dict: Dict[str, int], threshold: int= 1) -> Dict[str, in
     threshold: The minimum count to keep a kmer
 
     Returns:
-    A filtered dictionnary of kmers
+    A filtered dictionary of kmers
 
     Examples:
     >>> k_dict = {"A" : 4, "B" : 1, "C" : 12, "D" : 5}
@@ -79,7 +79,13 @@ def kmers_filter (kmers_dict: Dict[str, int], threshold: int= 1) -> Dict[str, in
     
     return f_kmers
 
-def abundance_hist(kmers_dict: Dict[str, int]):
+def abundance_hist(kmers_dict: Dict[str, int]) -> None:
+    """
+    Plots a histogram of kmer abundance on a logarithmic y axis.
+
+    Parameter:
+    kmer_dict: The dictionary of kmers and their counts
+    """
     abundance_hist = defaultdict(int)
     for count in kmers_dict.values():
             abundance_hist[count] += 1
