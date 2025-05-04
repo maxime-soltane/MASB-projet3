@@ -11,6 +11,10 @@ class DBG:
         self.__build_graph()
     
     def __build_graph(self):
+        """
+        Builds the graph by linking kmer prefixes and suffixes in self.__graph 
+        and suffixes and prefixes in self.__revers_graph.
+        """
         self.__graph = defaultdict(list)  # Réinitialise le graphe
         self.__reverse_graph = defaultdict(list)
 
