@@ -29,10 +29,11 @@ Enfin, certaines parties du code ont été optimisées afin d'apporter une meill
 
 ### Mesure du temps d'exécution et de la mémoire utilsée
 
-Ces deux paramètres ont été mesurés à l'aide de la commande : 
+Ces deux paramètres ont été mesurés à l'aide de la commande sur wsl : 
 ```bash
 "/usr/bin/time -v" python3 Main.py
 ```
+
 #### Level 0
 
 ```bash
@@ -47,7 +48,7 @@ Elapsed (wall clock) time (h:mm:ss or m:ss): 0:00.78
 ```bash
 /usr/bin/time -v python3 Main.py -r Level0.fa.gz -k 21 -a
 ```
-Maximum resident set size (kbytes): 86580
+Maximum resident set size (kbytes): 86580 
 
 Elapsed (wall clock) time (h:mm:ss or m:ss): 0:02.23
 
@@ -93,15 +94,28 @@ Elapsed (wall clock) time (h:mm:ss or m:ss): 1:29.93
 ```bash
 /usr/bin/time -v python3 Main.py -r Level6.fa.gz -k 1000 -kf 3 -tt 1000 -a
 ```
+Maximum resident set size (kbytes): 7498260
 
+Elapsed (wall clock) time (h:mm:ss or m:ss): 2:45.04
 
 - k = 2000
 ```bash
-/usr/bin/time -v python3 Main.py -r Level5.fa.gz -k 2000 -kf 3 -tt 1000 -a
+/usr/bin/time -v python3 Main.py -r Level6.fa.gz -k 2000 -kf 3 -tt 1000 -a
 ```
 
 
 #### Level 7
+```bash
+/usr/bin/time -v python3 Main.py -r Level7.fa.gz -k 1000 -kf 3 -tt 1000 -a
+```
+Maximum resident set size (kbytes): 7504032
+
+Elapsed (wall clock) time (h:mm:ss or m:ss): 2:37.36
+
+### Conclusion 
+
+L'assemblage obtenu avec ces paramètres au niveau 7 est de faible qualité (cf. Qualité d'assemblage) mais l'implémentation actuelle ne permet pas d'augmenter la taille des kmers (sous wsl, level 7 peut-être executé avec k = 3000 mais pas sur nos machines).
+Les autres niveaux ne pouvant offrir des assemblages de qualité avec l'implémentation ne sont pas mentionnés.
 
 ## __Qualité d'assemblage__
 
