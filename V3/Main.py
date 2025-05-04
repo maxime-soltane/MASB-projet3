@@ -66,7 +66,7 @@ if __name__ == '__main__':
         elif args.tip_threshold:
             dbg.get_all_contigs(tip_threshold=args.tip_threshold)
         
-        # 0 arguments present
+        # 0 argument present
         else:
             dbg.get_all_contigs()
 
