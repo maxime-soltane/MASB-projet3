@@ -87,6 +87,9 @@ Arguments optionnels:
 
 Exemples d'utilisation:
 
+    - python3 Main.py -r Level1.fa.gz -k 21 -kh
+Produira l'histogramme d'abondance de kmers du fichier "Level1.fa.gz" pour une taille de 21.
+
     - python3 Main.py -r Level1.fa.gz -o contigs_level1.fa -k 21 -a
 Produira le fichier "contigs_Level1.fa" contenant les contigs assemblés à partir des reads du fichier "Level1.fa.gz" en utilisant une taille de kmers de 21.
 
@@ -101,7 +104,7 @@ Les arguments peuvent ensuite être combinés pour configurer l'assemblage selon
     - python3 Main.py -r Level5.fa.gz -o contigs_Level5.fa -k 31 -kf 3 -tt 4 -a
 Produira le fichier "contigs_Level5.fa.gz" contenant les contigs assemblés à partir des reads du fichier "Level5.fa.gz" en utilisant une taille de kmer de 31, un seuil d'abondance de 3 pour les kmers, en filtrant les kmers pour ne garder que ceux dont l'abondance est supérieure à 3 et en utilisant un seuil de suppression des tips de 5.
 
-# Evaluation de la qualité d'assemblage
+# Bonus : Evaluation de la qualité d'assemblage
 
 Les contigs sont produits au format Fasta. L’évaluation peut être réalisée avec QUAST:
 
