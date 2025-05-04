@@ -33,8 +33,14 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    if args.kmers_length <2:
+    if args.kmers_length <=0:
         raise ValueError("La taille des kmers doit être supérieure à 0.")
+
+    if args.kmers_filter_threshold is not None and args.kmers_filter_threshold <=0:
+        raise ValueError(" Le seuil pour -kf doit être strictement positif.")
+    
+    if args.tip_threshold is not None and args.tip_threshold <=0:
+        raise ValueError(" Le seuil pour -tt doit être strictement positif.")
 
     start = time()
     f = read_gz(args.reads_file)
