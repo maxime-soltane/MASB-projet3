@@ -1,23 +1,23 @@
-#Import des modules nécessaires au main
+# Import the needed modules to the main
 import argparse
 from collections import defaultdict
 from time import time
 
-#Import des fonctions pour la lecture de fichier et l'extraction de kmers
+# Import needed functions to file reading and kmers extraction
 from Script import *
 
-#Import des méthodes pour créer le Graphe de DeBruijn
+# Import needed methods to create the DeBruijn graph
 from DBG_V3 import *
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    #Paramètres des fichiers
+    # Files parameters
     parser.add_argument("-r", "--reads_file", required=True, type = str, 
                         help = "Reads the assembler will work on")
     parser.add_argument("-o", "--outfile", required = False, type = str, 
                         help = "Output file name with contigs abtained with the assembler")
     
-    #Paramètres liés au kmers
+    # kmers parameters
     parser.add_argument("-k", "--kmers_length", required = True, type = int, 
                         help = "Length of kmers to extract")
     parser.add_argument("-kf", "--kmers_filter_threshold", required=False, type = int, 
@@ -25,7 +25,7 @@ if __name__ == '__main__':
     parser.add_argument("-kh", "--kmers_abundance_hist", required= False, action='store_true', 
                         help="Construct Kmers abundance histogram")
     
-    #Paramètres liés à l'assembleur
+    # Assembler parameters
     parser.add_argument("-a", "--assembler", required=False, action='store_true',
                         help = "Si présent assemble")
     parser.add_argument("-tt", "--tip_threshold", required=False, type=int,
@@ -41,7 +41,7 @@ if __name__ == '__main__':
         for kmer, count in kmers(str(seq.seq), args.kmers_length).items():
             kmers_dict[kmer] += count
 
-    #Création de l'histogramme d'abondance des kmers
+    # Creation of abundance histogram of kmers
     if args.kmers_abundance_hist:
         abundance_hist(kmers_dict)
 
@@ -55,18 +55,18 @@ if __name__ == '__main__':
         dbg = DBG(kmers_dict)
         print("DeBruijn graph generated")
         
-        #Gestion des arguments optionnels
-        #2 arguments présents
+        # Management of optional arguments
+        # 2 arguments present
         if args.outfile and args.tip_threshold:
             dbg.get_all_contigs(args.outfile, args.tip_threshold)
 
-        #1 argument présent
+        # 1 argument present
         elif args.outfile: 
             dbg.get_all_contigs(args.outfile)
         elif args.tip_threshold:
             dbg.get_all_contigs(tip_threshold=args.tip_threshold)
         
-        #0 argument présent
+        # 0 arguments present
         else:
             dbg.get_all_contigs()
 
