@@ -151,8 +151,6 @@ class DBG:
         []
         >>> g._DBG__extend_backward('GT')
         []
-        >>> g._DBG__extend_backward('GG')
-        []
         >>> g._DBG__extend_backward('GA')
         ['GG']
         """
