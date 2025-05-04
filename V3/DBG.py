@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import List, Set, Tuple
+from typing import Dict, List, Set, Tuple
 
 
 class DBG:
@@ -66,7 +66,7 @@ class DBG:
         """
         return self.__reverse_graph.get(node, [])
 
-    def get_graph(self):
+    def get_graph(self)-> Dict[str, List[str]]:
         """
         Returns the forward de Bruijn graph as a dictionary.
 
@@ -80,7 +80,33 @@ class DBG:
         """
         return dict(self.__graph)
     
+    def get_reverse_graph(self) -> Dict[str, List[str]]:
+    
+        """
+        Returns the reverse de Bruijn graph.
+
+        Returns:
+        A dictionary where keys are suffixes and values are lists of prefixes
+
+        Example:
+        >>> g = DBG({'ATG':1, 'TGG':1, 'GGA':1})
+        >>> g.get_reverse_graph()
+        {'TG': ['AT'], 'GG': ['TG'], 'GA': ['GG']}
+        """
+        return dict(self.__reverse_graph)
+    
     def get_kmers_dict(self):
+        """
+        Returns the kmers dictionnary used in the graph.
+
+        Returns:
+        A dictionary where keys are kmers and values are abundances
+
+        Example:
+        >>> g = DBG({'ATG':1, 'TGG':1, 'GGA':1})
+        >>> g.get_kmers_dict()
+        {'ATG': 1, 'TGG': 1, 'GGA': 1}
+        """
         return self.__kmers_dict
     
     # Path construction

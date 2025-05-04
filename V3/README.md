@@ -6,6 +6,7 @@ Modules nécessaires au bon fonctionnement du script :
 - argparse
 - gzip
 - collections (defaultdict)
+- typing (Dict, List, Set, Tuple)
 
 L'objectif de ce projet est de coder un assembleur basé sur la structure du graphe de De Bruijn, afin de reconstruire des contigs à partir de reads. Différents datasets présentant des particularités spécifiques devront pouvoir être assemblés pour attester de la robustesse de l'assembleur. Pour en évaluer la qualité, on soumettra les fichiers de sortie à l'analyse de l'outil QUAST. Ce projet comprend la lecture de fichiers Fasta, Fastq, qu'ils soient compressés (.gz) ou non. De plus, il permet l'extraction des kmers, la construction du graphe, la détection et gestion de structures parasites (tips et bulles). Enfin, il générera un fichier Fasta contenant les contigs assemblés.
 
@@ -33,24 +34,30 @@ Constructeur:
 
 Méthodes principales:
 
+- __build_graph(): Construit le graphe de De Bruijn
+- get_successors(node): Retourne les successeurs d'un noeud
+
+- get_predecessors(node): Retourne les prédécesseurs d'un noeud
 - get_graph(): Retourne le graphe direct
 - get_reverse_graph(): Retourne le graphe inverse
-- get_successors(node): Retourne les successeurs d'un noeud
-- get_predecessors(node): Retourne les prédécesseurs d'un noeud
-- get_all_contigs(): Reconstruit les contigs et les écrit dans un fichier Fasta
-- __assemble_sequence(path): Assemble une séquence à partir d'un chemin
+- get_kmers_dict(): Retourne le dictionnaire de kmers utilisé dans le graphe
+
+- __extend_forward(start_node): étend le chemin vers l'avant du noeud 
+- __extend_backward(start_node) : étend le chemin vers l'arrière du noeud 
 - __simple_path(start_node): Extrait un chemin simple depuis un noeud donné
+
+- get_all_contigs(output_file, tip_threshold): Reconstruit les contigs et les écrit dans un fichier Fasta
+- __assemble_sequence(path): Assemble une séquence à partir d'un chemin
 
 Gestion des tips:
 
 - is_tip(path, threshold): Renvoie True si le chemin est un tip
 - find_all_tips(threshold): Retourne la liste de tous les tips détectés
-- remove_tips(threshold): Supprime les tips du graphe et des kmers
+- remove_tips(threshold): Supprime les kmers associés aux tips et reconstruit le graphe
 
 Gestion des bulles:
 
-- find_all_bubbles(max_length): détecte les bulles divergentes-convergentes
-- remove_bubbles(threshold): Supprime les bulles les plus courtes
+- remove_bubbles(threshold): Supprime les bulles du graphe
 
 # Programme principal (Main.py)
 
