@@ -35,18 +35,71 @@ Ces deux paramètres ont été mesurés à l'aide de la commande :
 ```
 #### Level 0
 
+```bash
+/usr/bin/time -v python3 Main.py -r Level0.fa.gz -k 21 -a
+```
+Maximum resident set size (kbytes): 67248
+
+Elapsed (wall clock) time (h:mm:ss or m:ss): 0:00.78
 
 #### Level 1
 
+```bash
+/usr/bin/time -v python3 Main.py -r Level0.fa.gz -k 21 -a
+```
+Maximum resident set size (kbytes): 86580
+
+Elapsed (wall clock) time (h:mm:ss or m:ss): 0:02.23
+
 #### Level 2
+
+```bash
+/usr/bin/time -v python3 Main.py -r Level2.fa.gz -k 300 -kf 2 -a
+```
+Maximum resident set size (kbytes): 164636s
+
+Elapsed (wall clock) time (h:mm:ss or m:ss): 0:04.28
 
 #### Level 3
 
+```bash
+/usr/bin/time -v python3 Main.py -r Level3.fa.gz -k 800 -kf 3 -a
+```
+Maximum resident set size (kbytes): 969176
+
+Elapsed (wall clock) time (h:mm:ss or m:ss): 0:11.23
+
 #### Level 4
+
+```bash
+/usr/bin/time -v python3 Main.py -r Level4.fa.gz -k 1500 -kf 3 -tt 1000 -a
+```
+Maximum resident set size (kbytes): 4775344
+
+Elapsed (wall clock) time (h:mm:ss or m:ss): 0:24.80
 
 #### Level 5
 
+```bash
+/usr/bin/time -v python3 Main.py -r Level5.fa.gz -k 2000 -kf 3 -tt 1000 -a
+```
+Maximum resident set size (kbytes): 7481700
+
+Elapsed (wall clock) time (h:mm:ss or m:ss): 1:29.93
+
 #### Level 6
+
+- k = 1000
+```bash
+/usr/bin/time -v python3 Main.py -r Level6.fa.gz -k 1000 -kf 3 -tt 1000 -a
+```
+
+
+- k = 2000
+```bash
+/usr/bin/time -v python3 Main.py -r Level5.fa.gz -k 2000 -kf 3 -tt 1000 -a
+```
+
 
 #### Level 7
 
