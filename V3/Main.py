@@ -34,7 +34,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     if args.kmers_length <2:
-        raise ValueError("La taille des kmers doit être au moins de 2.")
+        raise ValueError("La taille des kmers doit être supérieure à 0.")
 
     start = time()
     f = read_gz(args.reads_file)
