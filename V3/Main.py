@@ -7,7 +7,7 @@ from time import time
 from Script import *
 
 # Import needed methods to create the DeBruijn graph
-from DBG_V3 import *
+from DBG import *
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
