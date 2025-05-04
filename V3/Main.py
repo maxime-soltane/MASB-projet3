@@ -33,6 +33,9 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
+    if args.kmers_length <2:
+        raise ValueError("La taille des kmers doit être au moins de 2.")
+
     start = time()
     f = read_gz(args.reads_file)
 
@@ -41,6 +44,9 @@ if __name__ == '__main__':
         for kmer, count in kmers(str(seq.seq), args.kmers_length).items():
             kmers_dict[kmer] += count
 
+    if not kmers_dict:
+        raise ValueError("Aucun kmer n'a pu être extrait, vérifiez le fichier ou la valeur de k")
+    
     # Creation of abundance histogram of kmers
     if args.kmers_abundance_hist:
         abundance_hist(kmers_dict)
@@ -59,6 +65,9 @@ if __name__ == '__main__':
         # 2 arguments present
         if args.outfile and args.tip_threshold:
             dbg.get_all_contigs(args.outfile, args.tip_threshold)
+        
+        if args.outfile and not args.outfile.endswith((".fa", ".fasta")):
+            raise ValueError("Le fichier doit comporter l'extension '.fa' ou '.fasta")
 
         # 1 argument present
         elif args.outfile: 
